@@ -485,55 +485,81 @@
     }
 
     /* ========== Seleccionar respuesta ========= */
-    window.selectAnswer = async function(index) {
-      if (answered && selectedAnswer === index) return;
-      const question = questions[currentQuestionIndex];
-      questionAttempts[question.id] = (questionAttempts[question.id] || 0) + 1;
-      const attemptsIndicator = document.getElementById('attemptsIndicator');
-      if (attemptsIndicator) attemptsIndicator.textContent = questionAttempts[question.id];
-      const isCorrect = index === correctAnswerIndex;
-      selectedAnswer = index;
-      const optionsGrid = document.getElementById('optionsGrid');
-      const buttons = optionsGrid ? optionsGrid.querySelectorAll('.option-button') : [];
-      buttons.forEach(btn => btn.disabled = true);
-      const selectedButton = document.getElementById(`option${index}`);
-      if (selectedButton) selectedButton.classList.add(isCorrect ? 'correct' : 'incorrect');
-      const feedback = document.getElementById('feedback');
+  // reemplaça window.selectAnswer per això
+window.selectAnswer = async function(index) {
+  if (answered && selectedAnswer === index) return;
+  const question = questions[currentQuestionIndex];
 
-      if (isCorrect) {
-        correctAnswers++;
-        const firstTry = questionAttempts[question.id] === 1;
-        if (firstTry && !firstTryCorrectByQuestion[question.id]) {
-          firstTryCorrectCount++;
-          firstTryCorrectByQuestion[question.id] = true;
-        }
-        answered = true;
-        if (feedback) { feedback.className = 'feedback success'; feedback.textContent = ''; }
-        showPandaCelebration();
-        const nextBtn = document.getElementById('nextButton');
-        if (nextBtn) nextBtn.style.display = 'inline-block';
-        try {
-          await recordResult({
-            question_id: question.id,
-            attempts: questionAttempts[question.id],
-            correct: true,
-            timestamp: new Date().toISOString(),
-            game_session: gameSession,
-            first_try: firstTry
-          });
-        } catch (e) { console.error('recordResult fallo:', e); }
-      } else {
-        if (feedback) { feedback.className = 'feedback error'; feedback.textContent = 'Vuelve a intentarlo'; }
-        setTimeout(() => {
-          if (feedback) feedback.textContent = '';
-          if (selectedButton) selectedButton.classList.remove('incorrect');
-          shuffleOptions(question);
-          renderOptionsGrid();
-          document.querySelectorAll('.option-button').forEach(btn => btn.disabled = false);
-          selectedAnswer = null;
-        }, 900);
-      }
-    };
+  const optionsGrid = document.getElementById('optionsGrid');
+  const buttons = optionsGrid ? optionsGrid.querySelectorAll('.option-button') : [];
+  // disable to avoid multi-click rapid
+  buttons.forEach(btn => btn.disabled = true);
+
+  const isCorrect = index === correctAnswerIndex;
+  const selectedButton = document.getElementById(`option${index}`);
+  const feedback = document.getElementById('feedback');
+
+  if (isCorrect) {
+    // Si és correcte, NO incrementem questionAttempts. Considerem 'firstTry' si no hi ha hagut intents prèviament (fallats)
+    const firstTry = (questionAttempts[question.id] || 0) === 0;
+    if (selectedButton) selectedButton.classList.add('correct');
+    if (firstTry && !firstTryCorrectByQuestion[question.id]) {
+      firstTryCorrectCount++;
+      firstTryCorrectByQuestion[question.id] = true;
+    }
+    answered = true;
+    if (feedback) { feedback.className = 'feedback success'; feedback.textContent = ''; }
+    showPandaCelebration();
+    const nextBtn = document.getElementById('nextButton');
+    if (nextBtn) nextBtn.style.display = 'inline-block';
+
+    // Guardem registre: attempts = número de intents fallats per aquesta pregunta fins ara
+    try {
+      await recordResult({
+        question_id: question.id,
+        attempts: questionAttempts[question.id] || 0,
+        correct: true,
+        timestamp: new Date().toISOString(),
+        game_session: gameSession,
+        first_try: firstTry
+      });
+    } catch (e) { console.error('recordResult fallo:', e); }
+
+  } else {
+    // INCORRECTE -> sumem 1 a intents (és un intent fallit)
+    questionAttempts[question.id] = (questionAttempts[question.id] || 0) + 1;
+    const attemptsIndicator = document.getElementById('attemptsIndicator');
+    if (attemptsIndicator) attemptsIndicator.textContent = questionAttempts[question.id];
+
+    if (selectedButton) {
+      selectedButton.classList.add('incorrect');
+    }
+    if (feedback) { feedback.className = 'feedback error'; feedback.textContent = 'Vuelve a intentarlo'; }
+
+    // guardem la resposta fallida (registre), útil per analítica detallada
+    try {
+      await recordResult({
+        question_id: question.id,
+        attempts: questionAttempts[question.id],
+        correct: false,
+        timestamp: new Date().toISOString(),
+        game_session: gameSession,
+        first_try: false
+      });
+    } catch (e) { console.error('recordResult fallo (fail):', e); }
+
+    setTimeout(() => {
+      // netejar feedback i reactivar butons, i barrejar opcions
+      if (feedback) feedback.textContent = '';
+      if (selectedButton) selectedButton.classList.remove('incorrect');
+      shuffleOptions(question);
+      renderOptionsGrid();
+      document.querySelectorAll('.option-button').forEach(btn => btn.disabled = false);
+      selectedAnswer = null;
+    }, 900);
+  }
+};
+
 
     function renderOptionsGrid(){
       const g = document.getElementById('optionsGrid');
@@ -803,6 +829,7 @@
     /* ========== Admin aggregated view & stats (mejorado) ========== */
   // Reemplaça buildAdminAggregatedView i renderAdminStats per aquestes versions
 
+// reemplaça buildAdminAggregatedView per:
 function buildAdminAggregatedView(){
   const rows = getStoredResults();
   const panel = adminPanel;
@@ -811,7 +838,7 @@ function buildAdminAggregatedView(){
     return;
   }
 
-  // separar sessions explícites i respostes
+  // sessions explícites i respostes individuals
   const explicitSessions = rows.filter(r => r && r.session).map(r => r.session).slice().reverse();
   const responseRecords = rows.filter(r => r && !r.session);
 
@@ -819,21 +846,20 @@ function buildAdminAggregatedView(){
   const sessionsById = {};
   responseRecords.forEach(r => {
     const sid = r.game_session || ('gen-' + (r.user_name || 'u') + '-' + (r.timestamp||''));
-    if(!sessionsById[sid]) sessionsById[sid] = { game_session: sid, date: r.timestamp || '', user_name: r.user_name || '', user_group: r.user_group || '', attemptsByQuestion: {}, firstTryCorrectCount:0, correctAnswers:0 };
+    if(!sessionsById[sid]) sessionsById[sid] = { game_session: sid, date: r.timestamp || '', user_name: r.user_name || '', user_group: r.user_group || '', attemptsByQuestion: {}, firstTryCorrectCount:0 };
     const s = sessionsById[sid];
+    // IMPORTANT: les attempts guardades en r.attempts ja són intents fallats, i guardem el MÀX vist per pregunta dins la sessió
     s.attemptsByQuestion[r.question_id] = Math.max(s.attemptsByQuestion[r.question_id] || 0, r.attempts || 0);
-    if(r.correct) s.correctAnswers = (s.correctAnswers||0) + 1;
     if(r.first_try) s.firstTryCorrectCount = (s.firstTryCorrectCount||0) + 1;
-    // keep earliest timestamp
     if(!s.date || (r.timestamp && new Date(r.timestamp) < new Date(s.date))) s.date = r.timestamp;
   });
 
-  // combinar: preferir sessions explícites, añadir sintetitzades que falten
+  // combinar: preferir sessions explícites, afegir sintetitzades que falten
   const explicitIds = new Set(explicitSessions.map(s=>s.game_session));
   const combined = explicitSessions.slice();
   Object.values(sessionsById).forEach(s => { if(!explicitIds.has(s.game_session)) combined.unshift(s); });
 
-  // construir HTML
+  // construir HTML (com abans), i invocar estats
   let html = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="small-btn" id="exportAllCsv">Exportar CSV</button><button class="small-btn" id="clearResultsBtn">Borrar resultados locales</button></div>`;
   html += `<div id="adminStats"></div>`;
   html += `<div style="margin-top:10px">`;
@@ -848,7 +874,7 @@ function buildAdminAggregatedView(){
       const totalQuestions = sess.totalQuestions || questions.length;
       const attemptsByQ = sess.attemptsByQuestion || {};
       const detailHtml = questions.map((q, idx) => {
-        const a = attemptsByQ[q.id] || '-';
+        const a = attemptsByQ[q.id] || 0;
         return `<div style="font-size:13px;color:#475569;margin-top:6px"><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong> ${a}</div>`;
       }).join('');
       html += `
@@ -866,6 +892,128 @@ function buildAdminAggregatedView(){
       `;
     });
   }
+  html += `</div>`;
+  panel.innerHTML = html;
+
+  // attach controls
+  document.getElementById('exportAllCsv').addEventListener('click', ()=> exportCsv(getStoredResults(), 'resultados_juego_all.csv'));
+  document.getElementById('clearResultsBtn').addEventListener('click', ()=>{
+    if(confirm('¿Borrar todos los resultados guardados localmente? Esta acción no se puede deshacer.')){
+      localStorage.removeItem(RESULTS_KEY);
+      buildAdminAggregatedView();
+    }
+  });
+
+  // Estadísticas
+  renderAdminStats(rows, combined);
+}
+
+// reemplaça renderAdminStats per:
+function renderAdminStats(allRows, combinedSessions){
+  const statsContainer = document.getElementById('adminStats');
+  if(!statsContainer) return;
+  const responseRecords = allRows.filter(r => r && !r.session);
+  const explicitSessions = allRows.filter(r => r && r.session).map(r => r.session);
+
+  // 1) Construir sessions sintetitzades com a map (id -> attemptsByQuestion)
+  const sessionsMap = {};
+
+  // incloure sessions explícites
+  explicitSessions.forEach(s => {
+    const sid = s.game_session || ('sess-' + (s.user_name||'') + '-' + (s.date||Math.random()));
+    sessionsMap[sid] = { id: sid, date: s.date, user_name: s.user_name, user_group: s.user_group, attemptsByQuestion: s.attemptsByQuestion || {}, firstTryCorrectCount: s.firstTryCorrectCount || 0 };
+  });
+
+  // agregar respostes individuals (mantenim el MÀX d'intents fallats per pregunta dins de cada sessió)
+  responseRecords.forEach(r => {
+    const sid = r.game_session || ('gen-' + (r.user_name || 'u') + '-' + (r.timestamp||''));
+    if(!sessionsMap[sid]) sessionsMap[sid] = { id: sid, date: r.timestamp || '', user_name: r.user_name || '', user_group: r.user_group || '', attemptsByQuestion: {}, firstTryCorrectCount:0 };
+    const s = sessionsMap[sid];
+    s.attemptsByQuestion[r.question_id] = Math.max(s.attemptsByQuestion[r.question_id] || 0, r.attempts || 0);
+    if(r.first_try) s.firstTryCorrectCount = (s.firstTryCorrectCount || 0) + 1;
+    if(!s.date || (r.timestamp && new Date(r.timestamp) < new Date(s.date))) s.date = r.timestamp;
+  });
+
+  // convertir map a array
+  const sessions = Object.keys(sessionsMap).map(k=>sessionsMap[k]);
+
+  // 2) Per cada sessió, identificar la pregunta AMB MÉS INTENTS dins d'aquesta sessió
+  const worstQuestionAccumulator = {}; // qid -> suma dels intents quan era la màxima dins la sessió
+  sessions.forEach(sess => {
+    const attemptsByQ = sess.attemptsByQuestion || {};
+    // trobar pregunta amb màxim intents; en cas d'empat, triem la de menor índex (ordre questions[])
+    let maxQid = null;
+    let maxAttempts = -1;
+    for (let i = 0; i < questions.length; i++) {
+      const qid = questions[i].id;
+      const v = attemptsByQ[qid] || 0;
+      if (v > maxAttempts) { maxAttempts = v; maxQid = qid; }
+    }
+    if (maxQid && maxAttempts > 0) {
+      worstQuestionAccumulator[maxQid] = (worstQuestionAccumulator[maxQid] || 0) + maxAttempts;
+    }
+  });
+
+  // Comptar first_try globals per pregunta (pregunta més acertada)
+  const firstTryCorrectsPerQuestion = {};
+  responseRecords.forEach(r => {
+    if(!r.question_id) return;
+    if(r.first_try) firstTryCorrectsPerQuestion[r.question_id] = (firstTryCorrectsPerQuestion[r.question_id] || 0) + 1;
+  });
+
+  // identificar worst i best
+  let worstQid = null; let worstSum = 0;
+  Object.keys(worstQuestionAccumulator).forEach(qid => {
+    if (worstQuestionAccumulator[qid] > worstSum) { worstSum = worstQuestionAccumulator[qid]; worstQid = qid; }
+  });
+
+  let bestQid = null; let bestSum = 0;
+  Object.keys(firstTryCorrectsPerQuestion).forEach(qid => {
+    if (firstTryCorrectsPerQuestion[qid] > bestSum) { bestSum = firstTryCorrectsPerQuestion[qid]; bestQid = qid; }
+  });
+
+  // sessionsCount i mitjana per usuari
+  const sessionsCount = sessions.length;
+  const sessionsByUser = {};
+  sessions.forEach(s => {
+    const u = s.user_name || 'Anónimo';
+    sessionsByUser[u] = sessionsByUser[u] || new Set();
+    sessionsByUser[u].add(s.id || Math.random());
+  });
+  const uniqueUsers = Object.keys(sessionsByUser).length;
+  const avgGamesPerUser = uniqueUsers === 0 ? 0 : (sessionsCount / uniqueUsers);
+
+  const worstLabel = worstQid ? (questions.find(q=>q.id===worstQid)?.shortTitle || worstQid) : 'N/A';
+  const bestLabel = bestQid ? (questions.find(q=>q.id===bestQid)?.shortTitle || bestQid) : 'N/A';
+  const worstDisplay = worstQid ? `${worstSum}` : '-';
+  const bestDisplay = bestQid ? `${bestSum}` : '-';
+
+  statsContainer.innerHTML = `
+    <div id="adminStatsInner" style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="min-width:220px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
+        <div style="font-size:12px;color:#94a3b8">Sesiones registradas</div>
+        <div style="font-weight:800;font-size:20px;color:#334155">${sessionsCount}</div>
+      </div>
+      <div style="min-width:220px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
+        <div style="font-size:12px;color:#94a3b8">Usuarios únicos</div>
+        <div style="font-weight:800;font-size:20px;color:#334155">${uniqueUsers}</div>
+      </div>
+      <div style="min-width:240px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
+        <div style="font-size:12px;color:#94a3b8">Media de partidas por usuario</div>
+        <div style="font-weight:800;font-size:20px;color:#334155">${avgGamesPerUser.toFixed(2)}</div>
+      </div>
+      <div style="min-width:260px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
+        <div style="font-size:12px;color:#94a3b8">Pregunta más fallada</div>
+        <div style="font-weight:800;font-size:18px;color:#b91c1c">${worstLabel} — ${worstDisplay}</div>
+      </div>
+      <div style="min-width:260px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
+        <div style="font-size:12px;color:#94a3b8">Pregunta más acertada</div>
+        <div style="font-weight:800;font-size:18px;color:#15803d">${bestLabel} — ${bestDisplay}</div>
+      </div>
+    </div>
+  `;
+}
+
   html += `</div>`;
   panel.innerHTML = html;
 
