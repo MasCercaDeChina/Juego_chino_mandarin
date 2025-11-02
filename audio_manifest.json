@@ -1,14 +1,16 @@
-[
-  {
-    "name": "T1 J-Q-X",
-    "url": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/Audio%20T1%20J-Q-X.m4a"
-  },
-  {
-    "name": "T1 Yi",
-    "url": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/Audio%20T1.%20Yi.m4a"
-  },
-  {
-    "name": "Yi+jq",
-    "url": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/Audio%20T2.%20Yi+jq.m4a"
-  }
-]
+{
+  "audios": [
+    {
+      "name": "T1 Yi",
+      "url": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/Audio%20T1.%20Yi.m4a"
+    },
+    {
+      "name": "Yi+jq",
+      "url": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/Audio%20T2.%20Yi+jq.m4a"
+    },
+    {
+      "name": "T1 J-Q-X",
+      "url": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/Audio%20T1%20J-Q-X.m4a"
+    }
+  ]
+}
