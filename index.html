@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Language" content="es">
   <meta name="language" content="es">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Juego de Pronunciación China</title>
+  <title>Juego de pronunciación: Ponte a tono :)</title>
   <style>
     /* Estilos principales */
     *, *:before, *:after { box-sizing: border-box; }
@@ -23,7 +23,8 @@
     .play-button{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .play-button:disabled{opacity:.5;cursor:not-allowed}
     .options-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-    .option-button{padding:12px;background:#fff;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:500;color:#2d3748;cursor:pointer;text-align:left;white-space:pre-wrap}
+    .option-button{padding:12px;background:#fff;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:500;color:#2d3748;cursor:pointer;text-align:left;white-space:pre-wrap;transition:transform .12s}
+    .option-button:hover:not(:disabled){transform:translateY(-3px)}
     .option-button.correct{background:#48bb78;border-color:#48bb78;color:#fff}
     .option-button.incorrect{background:#f56565;border-color:#f56565;color:#fff}
     .feedback{ text-align:center;padding:12px;border-radius:10px;margin-bottom:12px;font-size:16px;font-weight:600}
@@ -33,6 +34,41 @@
     .small-btn{padding:8px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;cursor:pointer;font-size:13px}
     .small-muted{font-size:12px;color:#94a3b8;text-align:center;margin-top:6px}
     .hidden{display:none!important}
+
+    /* Panda celebration centered, grande y animado */
+    .panda-center {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:8px;
+      width:100%;
+      text-align:center;
+      margin:8px 0 4px;
+    }
+    .panda-center .panda-emoji {
+      font-size:140px;
+      line-height:1;
+      transform-origin:center center;
+      animation: pandaPop .9s cubic-bezier(.2,.9,.2,1);
+      user-select:none;
+    }
+    .panda-center .panda-text {
+      font-size:22px;
+      font-weight:800;
+      color:#2d3748;
+      letter-spacing:0.6px;
+    }
+    @keyframes pandaPop {
+      0% { transform: scale(.4) translateY(40px); opacity:0 }
+      50% { transform: scale(1.08) translateY(-6px); opacity:1 }
+      80% { transform: scale(.96) translateY(2px) }
+      100% { transform: scale(1) translateY(0) }
+    }
+
+    /* confetti */
+    .confetti { position: absolute; width: 10px; height: 10px; border-radius:2px; z-index:99; animation:confettiFall linear forwards; pointer-events:none; }
+    @keyframes confettiFall { 0%{ transform: translateY(-30px) rotate(0); opacity:1 } 100%{ transform: translateY(160px) rotate(360deg); opacity:0 } }
 
     /* Admin results panel */
     #adminPanel { margin-top:14px; padding:12px; border-radius:12px; background:#f8fafc; display:none; max-height:60vh; overflow:auto; border:1px solid #e6edf8; }
@@ -54,6 +90,8 @@
     @media (max-width:520px){
       .password-card{ padding:14px; }
       .container{ padding:18px; }
+      .panda-center .panda-emoji { font-size:110px; }
+      .panda-center .panda-text { font-size:18px; }
     }
   </style>
 </head>
@@ -61,7 +99,7 @@
   <div class="container" id="mainContainer" aria-live="polite">
     <div class="header">
       <div>
-        <div class="title" id="gameTitle">Juego de Pronunciación China</div>
+        <div class="title" id="gameTitle">Juego de pronunciación: Ponte a tono :)</div>
         <div class="instructions" id="instructionsText">Escucha el audio y selecciona la respuesta correcta</div>
       </div>
 
@@ -147,7 +185,7 @@
     let gameSession = Date.now().toString();
     let questionAttempts = {};
     let correctAnswers = 0; // total correct (any attempt)
-    let firstTryCorrectCount = 0; // correcta en primer intent
+    let firstTryCorrectCount = 0; // (kept for internal use but not shown in final label)
     let firstTryCorrectByQuestion = {}; // { questionId: true/false }
     let answered = false;
     let selectedAnswer = null;
@@ -292,7 +330,7 @@
           <div class="audio-player">${audioSection}<div class="audio-controls"><button class="play-button" id="playButton" onclick="playAudio()" ${hasAudio ? '' : 'disabled'} aria-label="Reproducir audio">▶</button></div></div>
           <div class="options-grid" id="optionsGrid"></div>
           <div id="feedback" aria-live="polite"></div>
-          <div id="pandaCelebration" style="min-height:120px"></div>
+          <div id="pandaCelebration" style="min-height:160px; position:relative;"></div>
           <div style="margin-top:8px;text-align:center;font-size:12px;color:#718096">Intentos en esta pregunta: <span id="attemptsIndicator">${questionAttempts[question.id]}</span></div>
           <div style="display:flex;gap:10px;margin-top:12px;"><button class="next-button" id="nextButton" style="display:none" onclick="nextQuestion()">${currentQuestionIndex < questions.length-1 ? 'Siguiente Pregunta' : 'Ver Resultados'}</button></div>
         </div>
@@ -315,6 +353,36 @@
       if(a.paused){ if(btn){btn.textContent='⏸'; btn.style.background='linear-gradient(135deg,#f56565 0%,#e53e3e 100%)';} a.play().catch(e=>{console.error(e); if(btn){btn.textContent='▶'; btn.style.background='linear-gradient(135deg,#667eea 0%,#764ba2 100%)';}}); a.onended=()=>{ if(btn){btn.textContent='▶'; btn.style.background='linear-gradient(135deg,#667eea 0%,#764ba2 100%)';}} } else { a.pause(); if(btn){btn.textContent='▶'; btn.style.background='linear-gradient(135deg,#667eea 0%,#764ba2 100%)';} }
     }
 
+    /* ========== Panda celebration helper (centred + confetti) ========== */
+    function showPandaCelebration() {
+      const container = document.getElementById('pandaCelebration');
+      if(!container) return;
+      // clear existing
+      container.innerHTML = '';
+      // panda centered markup with chinese text
+      const pandaWrap = document.createElement('div');
+      pandaWrap.className = 'panda-center';
+      pandaWrap.innerHTML = `<div class="panda-emoji">🐼</div><div class="panda-text">太棒了！</div>`;
+      container.appendChild(pandaWrap);
+      // confetti burst
+      createConfettiBurst(container);
+    }
+
+    function createConfettiBurst(container){
+      const colors = ['#667eea', '#764ba2', '#48bb78', '#f6e05e', '#fc8181'];
+      for (let i = 0; i < 26; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = (10 + Math.random() * 80) + '%';
+        confetti.style.top = (10 + Math.random() * 6) + 'px';
+        confetti.style.background = colors[Math.floor(Math.random()*colors.length)];
+        confetti.style.animationDuration = (Math.random() * 1.2 + 1.4) + 's';
+        confetti.style.transform = `translateY(-10px) rotate(${Math.random()*360}deg)`;
+        container.appendChild(confetti);
+        setTimeout(()=> { if(confetti.parentNode) confetti.parentNode.removeChild(confetti); }, 3200);
+      }
+    }
+
     async function selectAnswer(index){
       if(answered && selectedAnswer===index) return;
       const q = questions[currentQuestionIndex];
@@ -328,15 +396,14 @@
 
       if(isCorrect){
         correctAnswers++;
-        // detectar primer intent:
         const firstTry = questionAttempts[q.id] === 1;
         if(firstTry && !firstTryCorrectByQuestion[q.id]){
           firstTryCorrectCount++;
           firstTryCorrectByQuestion[q.id] = true;
         }
         answered = true;
-        if(feedback){ feedback.className='feedback success'; feedback.textContent = defaultConfig.success_message; }
-        const panda = document.getElementById('pandaCelebration'); if(panda) panda.innerHTML = '🐼<div style="font-weight:700;margin-top:6px">¡Buen trabajo!</div>';
+        if(feedback){ feedback.className='feedback success'; feedback.textContent = ''; } // we show central panda instead
+        showPandaCelebration();
         const nextBtn = document.getElementById('nextButton'); if(nextBtn) nextBtn.style.display='block';
         await recordResult({ question_id: q.id, attempts: questionAttempts[q.id], correct: true, skipped:false, first_try: firstTry, timestamp: (new Date()).toISOString(), game_session: gameSession });
       } else {
@@ -355,6 +422,7 @@
 
     function nextQuestion(){ currentQuestionIndex++; shuffledOptions=[]; if(currentQuestionIndex<questions.length) renderQuestion(); else showResults(); }
 
+    /* ========= Redesigned results screen ========= */
     function showResults(){
       const content = document.getElementById('gameContent');
       const totalAttempts = Object.values(questionAttempts).reduce((a,b)=>a+b,0);
@@ -363,18 +431,28 @@
       // Desglose por pregunta (intentos)
       const perQuestionLines = questions.map((q, idx) => {
         const attempts = questionAttempts[q.id] || 0;
-        return `<div style="margin:6px 0;"><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong> ${attempts}</div>`;
+        return `<div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#fff;margin-bottom:8px;box-shadow:0 6px 18px rgba(12,20,40,0.04)"><div><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong></div><div style="font-weight:700;color:#334155">${attempts}</div></div>`;
       }).join('');
 
       content.innerHTML = `
-        <div style="text-align:center;padding:20px;">
-          <div style="font-size:64px">🐼🎉</div>
-          <h2>${defaultConfig.complete_message}</h2>
+        <div style="text-align:center;padding:26px;">
+          <div style="font-size:80px">🐼🎉</div>
+          <h2 style="margin:8px 0 6px">${defaultConfig.complete_message}</h2>
 
-          <div style="margin-top:12px;text-align:left;max-width:640px;margin-left:auto;margin-right:auto">
-            <div style="font-size:16px;font-weight:700;margin-bottom:8px">Respuestas acertadas (primer intento): ${firstTryCorrectCount}/${questions.length}</div>
-            <div style="font-size:14px;margin-bottom:12px"><strong>Intentos (desglose por pregunta):</strong>${perQuestionLines}</div>
-            <div style="font-size:14px;margin-top:8px">Intentos totales: <strong>${totalAttempts}</strong></div>
+          <div style="margin-top:18px;text-align:left;max-width:720px;margin-left:auto;margin-right:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(90deg,#f8fafc,#ffffff);box-shadow:0 10px 30px rgba(11,22,48,0.04);margin-bottom:12px">
+              <div>
+                <div style="font-size:13px;color:#94a3b8">Respuestas acertadas</div>
+                <div style="font-size:28px;font-weight:800;color:#667eea">${correctAnswers}/${questions.length}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:13px;color:#94a3b8">Intentos totales</div>
+                <div style="font-size:22px;font-weight:700;color:#2d3748">${totalAttempts}</div>
+              </div>
+            </div>
+
+            <div style="font-size:15px;font-weight:700;margin-bottom:8px">Detalle intentos:</div>
+            ${perQuestionLines}
           </div>
 
           <div style="margin-top:18px"><button onclick="restartGame()" style="padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer">Jugar de nuevo</button></div>
@@ -509,11 +587,9 @@
         adminPanel.innerHTML = `<div>No hay resultados todavía.</div>`;
         return;
       }
-      // Construir tabla HTML
       let html = `<div style="display:flex;gap:8px;margin-bottom:8px;"><button class="small-btn" id="exportAllCsv">Exportar todos CSV</button><button class="small-btn" id="clearResultsBtn">Borrar resultados locales</button></div>`;
       html += `<table><thead><tr><th>usuario</th><th>grupo</th><th>tipo</th><th>pregunta</th><th>intentos</th><th>correcto</th><th>first_try</th><th>timestamp</th><th>sesión</th></tr></thead><tbody>`;
       rows.slice().reverse().forEach(r=>{
-        // r puede ser un registro individual o un session summary (detectarlo)
         if(r.session){
           const s = r.session;
           html += `<tr><td>${r.session.user_name||''}</td><td>${r.session.user_group||''}</td><td>session_summary</td><td>-</td><td>-</td><td>-</td><td>-</td><td>${s.date}</td><td>${s.game_session}</td></tr>`;
@@ -550,7 +626,6 @@
       const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     }
 
-    // Toggle admin panel
     showAdminResultsBtn?.addEventListener?.('click', ()=>{
       if(adminPanel.style.display === 'block'){
         adminPanel.style.display = 'none';
@@ -562,13 +637,11 @@
 
     downloadCsvBtn?.addEventListener?.('click', ()=> exportCsv(getStoredResults(), 'resultados_juego_all.csv'));
 
-    // Also connect the header downloadResultsBtn just in case
     document.getElementById('downloadResultsBtn')?.addEventListener('click', ()=> {
       const data = getStoredResults();
       alert(`Registros locales: ${data.length}. Puedes usar "Ver resultados" para verlos o "Exportar CSV" para descargarlos.`);
     });
 
-    
   </script>
 </body>
 </html>
