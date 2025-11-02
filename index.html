@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Language" content="es">
   <meta name="language" content="es">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Juego de pronunciación: Ponte a tono :)</title>
+  <title>Juego de pronunciación</title>
   <style>
     /* Estilos principales */
     *, *:before, *:after { box-sizing: border-box; }
@@ -423,46 +423,57 @@
     function nextQuestion(){ currentQuestionIndex++; shuffledOptions=[]; if(currentQuestionIndex<questions.length) renderQuestion(); else showResults(); }
 
     /* ========= Redesigned results screen ========= */
-    function showResults(){
-      const content = document.getElementById('gameContent');
-      const totalAttempts = Object.values(questionAttempts).reduce((a,b)=>a+b,0);
-      document.getElementById('progressFill').style.width = '100%';
+  function showResults(){
+  const content = document.getElementById('gameContent');
+  const totalAttempts = Object.values(questionAttempts).reduce((a,b)=>a+b,0);
+  document.getElementById('progressFill').style.width = '100%';
 
-      // Desglose por pregunta (intentos)
-      const perQuestionLines = questions.map((q, idx) => {
-        const attempts = questionAttempts[q.id] || 0;
-        return `<div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#fff;margin-bottom:8px;box-shadow:0 6px 18px rgba(12,20,40,0.04)"><div><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong></div><div style="font-weight:700;color:#334155">${attempts}</div></div>`;
-      }).join('');
+  // Desglose por pregunta (intentos)
+  const perQuestionLines = questions.map((q, idx) => {
+    const attempts = questionAttempts[q.id] || 0;
+    return `<div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#fff;margin-bottom:8px;box-shadow:0 6px 18px rgba(12,20,40,0.04)"><div><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong></div><div style="font-weight:700;color:#334155">${attempts}</div></div>`;
+  }).join('');
 
-      content.innerHTML = `
-        <div style="text-align:center;padding:26px;">
-          <div style="font-size:80px">🐼🎉</div>
-          <h2 style="margin:8px 0 6px">${defaultConfig.complete_message}</h2>
+  content.innerHTML = `
+    <div style="text-align:center;padding:26px;">
+      <div style="font-size:80px">🐼🎉</div>
+      <h2 style="margin:8px 0 6px">${defaultConfig.complete_message}</h2>
 
-          <div style="margin-top:18px;text-align:left;max-width:720px;margin-left:auto;margin-right:auto">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(90deg,#f8fafc,#ffffff);box-shadow:0 10px 30px rgba(11,22,48,0.04);margin-bottom:12px">
-              <div>
-                <div style="font-size:13px;color:#94a3b8">Respuestas acertadas</div>
-                <div style="font-size:28px;font-weight:800;color:#667eea">${correctAnswers}/${questions.length}</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:13px;color:#94a3b8">Intentos totales</div>
-                <div style="font-size:22px;font-weight:700;color:#2d3748">${totalAttempts}</div>
-              </div>
-            </div>
-
-            <div style="font-size:15px;font-weight:700;margin-bottom:8px">Detalle intentos:</div>
-            ${perQuestionLines}
+      <div style="margin-top:18px;text-align:left;max-width:720px;margin-left:auto;margin-right:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(90deg,#f8fafc,#ffffff);box-shadow:0 10px 30px rgba(11,22,48,0.04);margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;color:#94a3b8">Respuestas acertadas</div>
+            <div style="font-size:28px;font-weight:800;color:#667eea">${firstTryCorrectCount}/${questions.length}</div>
           </div>
-
-          <div style="margin-top:18px"><button onclick="restartGame()" style="padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer">Jugar de nuevo</button></div>
+          <div style="text-align:right">
+            <div style="font-size:13px;color:#94a3b8">Intentos totales</div>
+            <div style="font-size:22px;font-weight:700;color:#2d3748">${totalAttempts}</div>
+          </div>
         </div>
-      `;
 
-      // guardem sessió resum com a registre
-      const sessionSummary = { game_session: gameSession, date:(new Date()).toISOString(), correctAnswers, firstTryCorrectCount, totalQuestions: questions.length, attemptsByQuestion: questionAttempts, user_name: localStorage.getItem('juego_user_name')||'', user_group: localStorage.getItem('juego_user_group')||'' };
-      storeResultLocal({ session: sessionSummary });
-    }
+        <div style="font-size:15px;font-weight:700;margin-bottom:8px">Detalle intentos:</div>
+        ${perQuestionLines}
+      </div>
+
+      <div style="margin-top:18px"><button onclick="restartGame()" style="padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer">Jugar de nuevo</button></div>
+    </div>
+  `;
+
+  // guardem sessió resum com a registre (incloem firstTryCorrectCount)
+  const sessionSummary = {
+    game_session: gameSession,
+    date: (new Date()).toISOString(),
+    // note: correctAnswers sigue guardado si el vols, però el que es mostra és firstTryCorrectCount
+    correctAnswers,
+    firstTryCorrectCount,
+    totalQuestions: questions.length,
+    attemptsByQuestion: questionAttempts,
+    user_name: localStorage.getItem('juego_user_name')||'',
+    user_group: localStorage.getItem('juego_user_group')||''
+  };
+  storeResultLocal({ session: sessionSummary });
+}
+
 
     function restartGame(){
       currentQuestionIndex = 0;
