@@ -1,129 +1,61 @@
 <!doctype html>
-<html lang="ca">
+<html lang="es">
 <head>
   <meta charset="utf-8" />
+  <meta http-equiv="Content-Language" content="es">
+  <meta name="language" content="es">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Juego de Pronunciación China</title>
   <style>
-    /* ===== Layout y estilos principales (mantengo la estética original) ===== */
-    body {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    /* Estilos principales */
+    *, *:before, *:after { box-sizing: border-box; }
+    body{margin:0;padding:0;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}
+    .container{width:90%;max-width:900px;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.3);padding:24px 40px;margin:20px;position:relative}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .title{font-size:24px;font-weight:700;color:#2d3748}
+    .instructions{font-size:14px;color:#718096}
+    .progress-bar{width:100%;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-bottom:20px}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#667eea 0%,#764ba2 100%);transition:width .3s ease;width:0%}
+    .question-card{background:#f7fafc;border-radius:16px;padding:20px;margin-bottom:18px}
+    .question-title{font-size:18px;font-weight:600;color:#2d3748;margin-bottom:12px}
+    .audio-player{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:16px;padding:14px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .audio-controls{display:flex;align-items:center;gap:12px}
+    .play-button{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .play-button:disabled{opacity:.5;cursor:not-allowed}
+    .options-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+    .option-button{padding:12px;background:#fff;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:500;color:#2d3748;cursor:pointer;text-align:left;white-space:pre-wrap}
+    .option-button.correct{background:#48bb78;border-color:#48bb78;color:#fff}
+    .option-button.incorrect{background:#f56565;border-color:#f56565;color:#fff}
+    .feedback{ text-align:center;padding:12px;border-radius:10px;margin-bottom:12px;font-size:16px;font-weight:600}
+    .feedback.success{background:#c6f6d5;color:#22543d}
+    .feedback.error{background:#fed7d7;color:#742a2a}
+    .next-button{padding:12px 18px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border:none;border-radius:12px;color:#fff;font-size:15px;cursor:pointer}
+    .small-btn{padding:8px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;cursor:pointer;font-size:13px}
+    .small-muted{font-size:12px;color:#94a3b8;text-align:center;margin-top:6px}
+    .hidden{display:none!important}
 
-    .container {
-      width: 90%;
-      max-width: 900px;
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      padding: 24px 40px;
-      margin: 20px;
-      position: relative;
-    }
-
-    .header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom: 18px; }
-    .title { font-size: 24px; font-weight: bold; color: #2d3748; margin-bottom: 6px; }
-    .instructions { font-size: 14px; color: #718096; margin-bottom: 6px; }
-
-    .controls-left { display:flex; gap:10px; align-items:center; }
-    .controls-right { display:flex; gap:10px; align-items:center; }
-
-    .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s ease; width:0%; }
-
-    .question-card { background: #f7fafc; border-radius: 16px; padding: 20px; margin-bottom: 18px; }
-    .question-title { font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 12px; }
-
-    .audio-player { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 16px; padding: 14px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
-    .audio-upload-section { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
-    .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; }
-    .file-input { position: absolute; left: -9999px; }
-    .file-input-label { padding: 10px 18px; background: #e2e8f0; border: 2px dashed #cbd5e0; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 13px; color: #4a5568; text-align: center; min-width: 180px; }
-    .file-input-label:hover { background: #edf2f7; border-color: #667eea; }
-    .file-name { font-size: 12px; color: #48bb78; font-weight: 500; }
-
-    .audio-controls { display:flex; align-items:center; gap:12px; }
-    .play-button { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border:none; color:white; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: transform .2s; }
-    .play-button:hover { transform: scale(1.05); }
-    .play-button:disabled { opacity: .5; cursor:not-allowed; }
-
-    .audio-text { font-size: 13px; color: #718096; }
-
-    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
-    .option-button { padding:12px; background:white; border:2px solid #e2e8f0; border-radius:10px; font-size:14px; font-weight:500; color:#2d3748; cursor:pointer; transition:all .2s; text-align:left; white-space:pre-wrap; line-height:1.15; }
-    .option-button:hover:not(:disabled) { border-color:#667eea; background:#f7fafc; transform: translateY(-2px); }
-    .option-button:disabled { cursor:not-allowed; opacity:.6; }
-    .option-button.correct { background:#48bb78; border-color:#48bb78; color:white; }
-    .option-button.incorrect { background:#f56565; border-color:#f56565; color:white; }
-
-    .feedback { text-align:center; padding:12px; border-radius:10px; margin-bottom:12px; font-size:16px; font-weight:600; }
-    .feedback.success { background:#c6f6d5; color:#22543d; }
-    .feedback.error { background:#fed7d7; color:#742a2a; }
-
-    .next-button { padding:12px 18px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border:none; border-radius:12px; color:white; font-size:15px; font-weight:600; cursor:pointer; transition:transform .2s; }
-    .next-button:hover { transform: translateY(-2px); }
-    .next-button:disabled { opacity:.5; cursor:not-allowed; }
-
-    .results-card { text-align:center; padding:20px; }
-    .results-title { font-size:24px; font-weight:bold; color:#2d3748; margin-bottom:12px; }
-    .results-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:18px 0; }
-    .stat-card { background:#f7fafc; padding:12px; border-radius:10px; }
-    .stat-value { font-size:28px; font-weight:bold; color:#667eea; }
-    .stat-label { font-size:12px; color:#718096; margin-top:5px; }
-    .restart-button { padding:12px 18px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border:none; border-radius:12px; color:white; font-size:15px; font-weight:600; cursor:pointer; transition:transform .2s; margin-top:10px; }
-    .restart-button:hover { transform: translateY(-2px); }
-
-    .attempts-indicator { text-align:center; font-size:12px; color:#718096; margin-top:6px; }
-    .loading { text-align:center; padding:12px; color:#718096; }
-
-    /* panda original (emoji) */
-    .panda-celebration{
-      font-size:80px; line-height:1; text-align:center; margin:10px 0 6px; cursor:pointer; user-select:none;
-      display:flex; align-items:center; justify-content:center; flex-direction:column;
-    }
-    .panda-body{ font-size:14px; color:#2d3748; font-weight:700; margin-top:6px; }
-    .panda-celebration.clicked{ transform: translateY(-12px) scale(1.02); transition:transform .25s ease; }
-    .panda-celebration.party{ animation:pandaParty 900ms ease-in-out infinite; }
-    @keyframes pandaParty{0%{transform:rotate(-6deg)}50%{transform:rotate(6deg) scale(1.04)}100%{transform:rotate(-6deg)}}
-
-    /* confetti */
-    .confetti { position: absolute; width: 10px; height: 10px; border-radius:2px; z-index:99; animation:confettiFall linear forwards; }
-    @keyframes confettiFall { 0%{ transform: translateY(-30px) rotate(0); opacity:1 } 100%{ transform: translateY(160px) rotate(360deg); opacity:0 } }
-
-    .small-muted { font-size:12px; color:#94a3b8; text-align:center; margin-top:6px; }
-    /* modal */
+    /* Modal contraseña */
     .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:200; }
     .password-card { background: white; padding: 18px; border-radius: 12px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
-    .admin-actions { display:flex; gap:8px; align-items:center; }
-    .small-btn { padding:8px 10px; border-radius:8px; border:1px solid #cbd5e0; background:#fff; cursor:pointer; font-size:13px; }
-    .danger { background:#fff5f5; border-color:#fed7d7; }
-    .hint { font-size:12px; color:#94a3b8; }
-    .hidden { display:none !important; }
+    .password-card h2 { margin: 6px 0 8px; font-size:18px; }
+    .password-input { width:100%; max-width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:12px; font-size:14px; }
+    .password-btn { width:100%; padding:12px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
+    .password-error { color:#f56565; margin-top:8px; display:none; }
   </style>
 </head>
 <body>
   <div class="container" id="mainContainer" aria-live="polite">
     <div class="header">
-      <div style="display:flex; flex-direction:column;">
+      <div>
         <div class="title" id="gameTitle">Juego de Pronunciación China</div>
-        <div class="instructions" id="instructionsText">Escolta l'àudio i selecciona la resposta correcta</div>
+        <div class="instructions" id="instructionsText">Escucha el audio y selecciona la respuesta correcta</div>
       </div>
 
-      <div class="controls-right" id="adminControls" aria-hidden="true" style="visibility:hidden;">
-        <!-- Botons d'administració (només visibles en mode profe) -->
-        <div class="admin-actions">
-          <button class="small-btn" id="exportAudiosBtn" title="Exportar audios guardats (per fer backup)">Exportar audios</button>
-          <button class="small-btn" id="downloadResultsBtn" title="Descarregar tots els resultats">Descargar Resultados</button>
-          <button class="small-btn" id="downloadCsvBtn" title="Descarregar CSV">Exportar CSV</button>
-        </div>
+      <!-- Panel admin: oculto per defecte, visible en mode admin -->
+      <div id="adminControls" style="visibility:hidden">
+        <button class="small-btn" id="exportAudiosBtn">Exportar audios</button>
+        <button class="small-btn" id="downloadResultsBtn">Descargar resultados</button>
+        <button class="small-btn" id="downloadCsvBtn">Exportar CSV</button>
       </div>
     </div>
 
@@ -131,31 +63,32 @@
 
     <div id="gameContent"></div>
 
-    <div class="small-muted" style="margin-top:12px">tus resultados se mandarán automáticamente a la profesora para su evaluación</div>
+    <div class="small-muted" style="margin-top:12px">Tus resultados se mandarán automáticamente a la profesora para su evaluación</div>
   </div>
 
   <!-- Modal contraseña -->
   <div id="passwordOverlay" class="overlay" style="display:none;">
     <div class="password-card" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
       <h2 id="pwTitle">Introduce la contraseña</h2>
-      <p>Introduce la contraseña para acceder (profesores usan la misma per a admin; alumnes també poden introduir-la si està configurada).</p>
-      <input id="passwordInput" class="password-input" type="password" placeholder="Contraseña" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:12px;">
-      <button id="passwordBtn" class="password-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Empezar</button>
-      <div id="passwordError" class="password-error" style="color:#f56565;margin-top:8px;display:none;">Contraseña incorrecta</div>
+      <!-- He eliminado la frase explicativa solicitada -->
+      <input id="passwordInput" class="password-input" type="password" placeholder="Introduce la contraseña">
+      <button id="passwordBtn" class="password-btn">Empezar</button>
+      <div id="passwordError" class="password-error">Contraseña incorrecta</div>
     </div>
   </div>
 
   <script>
-    /* ==================== CONFIGURACIÓN ==================== */
-    const GAME_PASSWORD = "curso2025"; // si vacío -> no pide contraseña
-    // ********** Pon aquí la URL pública de tu audios_manifest.json **********
-    const GAME_AUDIO_MANIFEST_URL = "https://TU_HOSTING_PUBLIC/audios_manifest.json";
-    // ************************************************************************
+    /* ==================== CONFIGURACIÓN: dos contraseñas ==================== */
+    // Contraseña alumnos (solo juegan)
+    const STUDENT_PASSWORD = "PANDARÍN25";
+    // Contraseña profesora/admin (activa controls d'admin)
+    const ADMIN_PASSWORD = "XUXITO25";
 
-    /* ==================== DATOS DEL JUEGO ==================== */
+    // URL del manifest d'àudios (posar la teva URL pública aquí)
+    const GAME_AUDIO_MANIFEST_URL = "https://TU_HOSTING_PUBLIC/audios_manifest.json";
+
+    /* ==================== RESTO DEL JOC (simplificat / adaptat) ==================== */
     const defaultConfig = {
-      game_title: "Juego de Pronunciación China",
-      instructions_text: "Escucha el audio y selecciona la respuesta correcta",
       success_message: "¡Excelente!",
       error_message: "Vuelve a intentarlo",
       complete_message: "¡Juego completado!"
@@ -198,7 +131,7 @@
       }
     ];
 
-    /* ==================== ESTADO ==================== */
+    /* ==================== Estado del juego ==================== */
     let currentQuestionIndex = 0;
     let gameSession = Date.now().toString();
     let questionAttempts = {};
@@ -211,48 +144,37 @@
     let audioFileNames = {};   // { idx: filename }
     let isAdminMode = false;
 
-    /* ====== localStorage keys ====== */
+    const RESULTS_KEY = 'juego_results';
     function audioKeyData(idx){ return `juego_audio_data_q${idx}`; }
     function audioKeyName(idx){ return `juego_audio_name_q${idx}`; }
-    const RESULTS_KEY = 'juego_results';
 
-    /* ==================== UTILIDADES ==================== */
-    function shuffleArray(arr){
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-    }
-
+    /* ==================== Utilidades ==================== */
+    function shuffleArray(arr){ for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
     function shuffleOptions(question) {
-      const options = [...question.options];
-      const correctOption = options[question.correctIndex];
-      shuffleArray(options);
-      correctAnswerIndex = options.indexOf(correctOption);
-      shuffledOptions = options;
+      const opts = [...question.options];
+      const correct = opts[question.correctIndex];
+      shuffleArray(opts);
+      correctAnswerIndex = opts.indexOf(correct);
+      shuffledOptions = opts;
       return { options: shuffledOptions, correctIndex: correctAnswerIndex };
     }
 
-    /* ==================== Persistencia de audios ==================== */
+    /* ==================== Persistencia audio local (opcional) ==================== */
     function saveAudioToLocal(questionIndex, dataUrl, filename){
       try {
         localStorage.setItem(audioKeyData(questionIndex), dataUrl);
         localStorage.setItem(audioKeyName(questionIndex), filename);
-        // actualitzar objectes en memòria
-        try {
-          const audioEl = document.createElement('audio');
-          audioEl.src = dataUrl;
-          audioEl.preload = 'auto';
-          audioFiles[questionIndex] = audioEl;
-          audioFileNames[questionIndex] = filename;
-        } catch(e){}
+        const audioEl = document.createElement('audio');
+        audioEl.src = dataUrl;
+        audioEl.preload = 'auto';
+        audioFiles[questionIndex] = audioEl;
+        audioFileNames[questionIndex] = filename;
         return true;
       } catch (e) {
         console.warn('No se pudo guardar audio en localStorage:', e);
         return false;
       }
     }
-
     function loadSavedAudios(){
       for (let i = 0; i < questions.length; i++){
         const data = localStorage.getItem(audioKeyData(i));
@@ -260,20 +182,17 @@
         if (data && name){
           try {
             const audioEl = document.createElement('audio');
-            audioEl.src = data; // data URL
+            audioEl.src = data;
             audioEl.preload = 'auto';
             audioFiles[i] = audioEl;
             audioFileNames[i] = name;
-          } catch(err){
-            console.warn('Error al crear audio desde localStorage', err);
-          }
+          } catch(err){ console.warn(err); }
         }
       }
     }
 
-    /* ==================== Carregar manifest públic i préfetch+guardar local ==================== */
+    /* ==================== Cargar manifest públic i guardar localmente ==================== */
     async function fetchAsDataURL(url){
-      // baixa com Blob i converteix a dataURL
       try {
         const r = await fetch(url, { mode: 'cors' });
         if (!r.ok) throw new Error('fetch failed ' + r.status);
@@ -289,25 +208,17 @@
         return null;
       }
     }
-
-    // Carrega el manifest d'àudios públic i guarda els audios a localStorage la primera vegada
-    async function loadAudioManifestAndPrefetch() {
+    async function loadAudioManifestAndPrefetch(){
       if (!GAME_AUDIO_MANIFEST_URL) return;
       try {
-        const res = await fetch(GAME_AUDIO_MANIFEST_URL, { cache: "no-cache" });
-        if (!res.ok) {
-          console.warn('No s\'ha pogut carregar el manifest d\'àudios:', res.status);
-          return;
-        }
+        const res = await fetch(GAME_AUDIO_MANIFEST_URL, { cache: 'no-cache' });
+        if (!res.ok) { console.warn('No se pudo cargar manifest', res.status); return; }
         const manifest = await res.json();
-        // Per cada entrada del manifest, assignem a audioFiles[i] o la guardem a localStorage
-        for (const key of Object.keys(manifest)) {
+        for (const key of Object.keys(manifest)){
           const idx = Number(key);
           if (Number.isNaN(idx) || idx < 0 || idx >= questions.length) continue;
           const entry = manifest[key];
           if (!entry || !entry.url) continue;
-
-          // Si ja tenim a localStorage, carregar d'allà
           const localData = localStorage.getItem(audioKeyData(idx));
           const localName = localStorage.getItem(audioKeyName(idx));
           if (localData && localName) {
@@ -318,18 +229,12 @@
               audioFiles[idx] = audioEl;
               audioFileNames[idx] = localName;
               continue;
-            } catch (e) {
-              console.warn('Error al utilitzar audio local guardat, procedim a baixar', e);
-            }
+            } catch (e) { console.warn(e); }
           }
-
-          // No hi ha local: baixar i convertir a dataURL i guardar
           const dataUrl = await fetchAsDataURL(entry.url);
           if (dataUrl) {
-            // intentar guardar local; si no es pot (limit quota) simplement carregar com URL pública
             const saved = saveAudioToLocal(idx, dataUrl, entry.name || entry.url.split('/').pop());
             if (!saved) {
-              // fallback: utilitzar URL pública sense guardar
               try {
                 const audioEl = document.createElement('audio');
                 audioEl.src = entry.url;
@@ -339,7 +244,6 @@
               } catch(e){}
             }
           } else {
-            // no s'ha pogut convertir; utilitzar URL pública
             try {
               const audioEl = document.createElement('audio');
               audioEl.src = entry.url;
@@ -349,115 +253,57 @@
             } catch(e){}
           }
         }
-      } catch (err) {
-        console.error('Error carregant manifest d\'audios:', err);
-      }
+      } catch (err) { console.error('Error cargando manifest', err); }
     }
 
-    /* ==================== Export audios guardats (admin) ==================== */
-    function exportAudiosPack(){
-      const pack = {};
-      for (let i=0;i<questions.length;i++){
-        const data = localStorage.getItem(audioKeyData(i));
-        const name = localStorage.getItem(audioKeyName(i));
-        if (data && name){
-          pack[i] = { name, data };
-        }
-      }
-      if (Object.keys(pack).length === 0){
-        alert('No hay audios guardados para exportar.');
-        return;
-      }
-      const blob = new Blob([JSON.stringify(pack)], {type: 'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `audios_juego_pack_${(new Date()).toISOString().slice(0,10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
+    /* ==================== Registro resultados local + dataSdk stub ==================== */
+    function getStoredResults(){ try { const raw = localStorage.getItem(RESULTS_KEY); return raw ? JSON.parse(raw) : []; } catch(e){ return []; } }
+    function storeResultLocal(record){ try { const arr = getStoredResults(); arr.push(record); localStorage.setItem(RESULTS_KEY, JSON.stringify(arr)); } catch(e){ console.warn(e); } }
+    async function recordResult(record){ try { await window.dataSdk.create(record).catch(()=>{}); } catch(e){} storeResultLocal(record); }
 
-    /* ==================== Render / lógica principal ==================== */
+    /* ==================== Render y lógica del juego ==================== */
     function renderQuestion(reshuffleOptions = true) {
       const content = document.getElementById('gameContent');
       const question = questions[currentQuestionIndex];
       if (!questionAttempts[question.id]) questionAttempts[question.id] = 0;
       if (reshuffleOptions || shuffledOptions.length === 0) shuffleOptions(question);
-
       const progress = ((currentQuestionIndex) / questions.length) * 100;
       document.getElementById('progressFill').style.width = progress + '%';
-
       const hasAudio = !!audioFiles[currentQuestionIndex];
       const audioFileName = audioFileNames[currentQuestionIndex] || '';
-
       let audioUploadSection = '';
       let playButtonAttr = hasAudio ? '' : 'disabled';
-
       if (hasAudio && audioFileName) {
-        audioUploadSection = `<div class="audio-upload-section"><div class="file-name">✅ Audio cargado: ${audioFileName}</div></div>`;
+        audioUploadSection = `<div style="font-size:12px;color:#48bb78">✅ Audio cargado: ${audioFileName}</div>`;
       } else {
-        audioUploadSection = `
-          <div class="audio-upload-section">
-            <div class="file-input-wrapper">
-              <input type="file" id="audioFile${currentQuestionIndex}" class="file-input" accept="audio/*" onchange="handleAudioUpload(${currentQuestionIndex})">
-              <label for="audioFile${currentQuestionIndex}" class="file-input-label">📁 Subir Audio para esta Pregunta</label>
-            </div>
-            <div id="fileName${currentQuestionIndex}" class="file-name"></div>
-          </div>
-        `;
+        audioUploadSection = `<div style="font-size:13px;color:#4a5568">No hay audio disponible.</div>`;
       }
-
       content.innerHTML = `
         <div class="question-card" role="region" aria-label="Pregunta ${currentQuestionIndex + 1}">
           <div class="question-title">${question.title}</div>
-          <div class="audio-player">
-            ${audioUploadSection}
-            <div class="audio-controls">
-              <button class="play-button" id="playButton" onclick="playAudio()" ${playButtonAttr} aria-label="Reproducir audio">▶</button>
-              <div class="audio-text">${question.audioPlaceholder || ''}</div>
-            </div>
-          </div>
-          <div class="options-grid" id="optionsGrid">
-            <!-- Opcions generades dinàmicament -->
-          </div>
+          <div class="audio-player">${audioUploadSection}<div class="audio-controls"><button class="play-button" id="playButton" onclick="playAudio()" ${playButtonAttr}>▶</button></div></div>
+          <div class="options-grid" id="optionsGrid"></div>
           <div id="feedback" aria-live="polite"></div>
-          <div id="pandaCelebration" style="position:relative; min-height:120px;"></div>
-          <div class="attempts-indicator" id="attemptsIndicator">Intentos en esta pregunta: ${questionAttempts[question.id]}</div>
-          <div style="display:flex;gap:10px;margin-top:12px;">
-            <button class="next-button" id="nextButton" onclick="nextQuestion()" style="display:none;">
-              ${currentQuestionIndex < questions.length - 1 ? 'Siguiente Pregunta' : 'Ver Resultados'}
-            </button>
-            <button class="small-btn" id="skipBtn">Saltar pregunta</button>
-          </div>
+          <div id="pandaCelebration" style="min-height:120px"></div>
+          <div style="margin-top:8px;text-align:center;font-size:12px;color:#718096">Intentos en esta pregunta: <span id="attemptsIndicator">${questionAttempts[question.id]}</span></div>
+          <div style="display:flex;gap:10px;margin-top:12px;"><button class="next-button" id="nextButton" style="display:none" onclick="nextQuestion()">${currentQuestionIndex < questions.length - 1 ? 'Siguiente Pregunta' : 'Ver Resultados'}</button><button class="small-btn" id="skipBtn">Saltar pregunta</button></div>
         </div>
       `;
-      // render options y focus
       renderOptionsGrid();
       answered = false;
       selectedAnswer = null;
-
-      // skip button
       const skipBtn = document.getElementById('skipBtn');
       if (skipBtn){
         skipBtn.onclick = () => {
-          recordResult({question_id: question.id, attempts: questionAttempts[question.id], correct: false, skipped: true, timestamp:new Date().toISOString(), game_session:gameSession});
-          // marcar com a saltada i avançar
+          recordResult({question_id: question.id, attempts: questionAttempts[question.id], correct: false, skipped: true, timestamp: new Date().toISOString(), game_session: gameSession});
           currentQuestionIndex++;
           shuffledOptions = [];
           if (currentQuestionIndex < questions.length) renderQuestion();
           else showResults();
         };
       }
-
-      // habilitar focus en la primera opcio
-      setTimeout(()=> {
-        const firstOpt = document.querySelector('.option-button');
-        if (firstOpt) firstOpt.focus();
-      }, 60);
+      setTimeout(()=> { const firstOpt = document.querySelector('.option-button'); if (firstOpt) firstOpt.focus(); }, 60);
     }
-
     function renderOptionsGrid(){
       const optionsGrid = document.getElementById('optionsGrid');
       if (!optionsGrid) return;
@@ -466,296 +312,92 @@
           ${option}
         </button>
       `).join('');
-      // assign aria-disabled inicial
-      const buttons = optionsGrid.querySelectorAll('.option-button');
-      buttons.forEach(btn => { btn.disabled = false; btn.setAttribute('aria-disabled','false'); });
+      document.querySelectorAll('.option-button').forEach(btn => { btn.disabled = false; btn.setAttribute('aria-disabled','false'); });
     }
-
-    function handleAudioUpload(questionIndex) {
-      // Permet pujar localment si el professor ho fa sobre el dispositiu
-      const fileInput = document.getElementById(`audioFile${questionIndex}`);
-      const fileNameDiv = document.getElementById(`fileName${questionIndex}`);
-      const playButton = document.getElementById('playButton');
-      if (!fileInput) return;
-      if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const audioElement = document.createElement('audio');
-        const url = URL.createObjectURL(file);
-        audioElement.src = url;
-        audioElement.preload = 'auto';
-        audioFiles[questionIndex] = audioElement;
-        audioFileNames[questionIndex] = file.name;
-        if (fileNameDiv) fileNameDiv.textContent = `✅ Audio cargado: ${file.name}`;
-        if (playButton) {
-          playButton.disabled = false;
-          playButton.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-        }
-
-        // leer como data URL y guardar en localStorage (para persistencia)
-        const reader = new FileReader();
-        reader.onload = function(e){
-          const dataUrl = e.target.result;
-          saveAudioToLocal(questionIndex, dataUrl, file.name);
-        };
-        reader.onerror = function(err){
-          console.warn('Error leyendo archivo para guardar', err);
-        };
-        try { reader.readAsDataURL(file); } catch(e) { console.warn('No se pudo leer el archivo para guardarlo', e); }
-      }
-    }
-
-    /* ==================== Reproducir / Pausar (sense reiniciar) ==================== */
     function playAudio() {
       const button = document.getElementById('playButton');
       const audioElement = audioFiles[currentQuestionIndex];
-
-      if (!audioElement) {
-        console.log('No hay audio disponible para esta pregunta');
-        return;
-      }
-
+      if (!audioElement) { console.log('No hay audio disponible para esta pregunta'); return; }
       if (audioElement.paused) {
-        if (button) {
-          button.textContent = '⏸';
-          button.style.background = 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
-        }
-        audioElement.play().then(() => {
-          // reproducción iniciada
-        }).catch(error => {
-          console.error('Error al reproducir audio:', error);
-          if (button) {
-            button.textContent = '▶';
-            button.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-          }
-        });
-        audioElement.onended = () => {
-          if (button) {
-            button.textContent = '▶';
-            button.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-          }
-        };
-        audioElement.onerror = () => {
-          if (button) {
-            button.textContent = '▶';
-            button.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-          }
-          console.error('Error en el archivo de audio');
-        };
+        if (button) { button.textContent = '⏸'; button.style.background = 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)'; }
+        audioElement.play().catch(error => { console.error('Error al reproducir audio:', error); if (button) { button.textContent = '▶'; button.style.background = 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)'; }});
+        audioElement.onended = () => { if (button) { button.textContent = '▶'; button.style.background = 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)'; } };
       } else {
         audioElement.pause();
-        if (button) {
-          button.textContent = '▶';
-          button.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-        }
+        if (button) { button.textContent = '▶'; button.style.background = 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)'; }
       }
     }
-
-    /* ==================== Confetti (simple) ==================== */
-    function createConfetti() {
-      const colors = ['#667eea', '#764ba2', '#48bb78', '#f6e05e', '#fc8181'];
-      const container = document.getElementById('pandaCelebration');
-      if (!container) return;
-      for (let i = 0; i < 18; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 90 + '%';
-        confetti.style.top = Math.random() * 10 + 'px';
-        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.animationDuration = (Math.random() * 1.2 + 1.6) + 's';
-        container.appendChild(confetti);
-        setTimeout(() => { if (confetti.parentNode) confetti.parentNode.removeChild(confetti); }, 3000);
-      }
-    }
-
-    /* ==================== Panda interactiu ==================== */
-    function renderPandaOld() {
-      return `<div class="panda-celebration" id="pandaEmoji">🐼<div class="panda-body">¡Buen trabajo!</div></div>`;
-    }
-
-    function makePandaInteractiveOld() {
-      const panda = document.getElementById('pandaEmoji');
-      if (!panda) return;
-      let clicks = 0;
-      let partying = false;
-      panda.onclick = () => {
-        clicks++;
-        panda.classList.add('clicked');
-        setTimeout(()=> panda.classList.remove('clicked'), 420);
-        if (clicks >= 3 && !partying) {
-          partying = true;
-          panda.classList.add('party');
-          createConfetti();
-          setTimeout(()=> { panda.classList.remove('party'); partying = false; clicks = 0; }, 3000);
-        }
-      };
-      panda.animate([{opacity:0, transform:'translateY(8px)'},{opacity:1, transform:'translateY(0)'}],{duration:420,easing:'ease-out'});
-    }
-
-    /* ==================== Registre resultats (local + dataSdk) ==================== */
-    function getStoredResults(){
-      try {
-        const raw = localStorage.getItem(RESULTS_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch(e){ return []; }
-    }
-    function storeResultLocal(record){
-      try {
-        const arr = getStoredResults();
-        arr.push(record);
-        localStorage.setItem(RESULTS_KEY, JSON.stringify(arr));
-      } catch(e){ console.warn('No se pudo guardar resultado localmente', e); }
-    }
-
-    async function recordResult(record){
-      try {
-        await window.dataSdk.create(record).catch(()=>{});
-      } catch(e){}
-      storeResultLocal(record);
-    }
-
-    /* ==================== Resposta de l'usuari ==================== */
     async function selectAnswer(index) {
       if (answered && selectedAnswer === index) return;
       const question = questions[currentQuestionIndex];
       questionAttempts[question.id] = (questionAttempts[question.id] || 0) + 1;
       const attemptsIndicator = document.getElementById('attemptsIndicator');
-      if (attemptsIndicator) attemptsIndicator.textContent = `Intentos en esta pregunta: ${questionAttempts[question.id]}`;
+      if (attemptsIndicator) attemptsIndicator.textContent = `${questionAttempts[question.id]}`;
       const isCorrect = index === correctAnswerIndex;
       selectedAnswer = index;
       const optionsGrid = document.getElementById('optionsGrid');
       const buttons = optionsGrid ? optionsGrid.querySelectorAll('.option-button') : [];
-      // bloquear mientras procesamos
       buttons.forEach(btn => { btn.disabled = true; btn.setAttribute('aria-disabled','true'); });
       const selectedButton = document.getElementById(`option${index}`);
       if (selectedButton) selectedButton.classList.add(isCorrect ? 'correct' : 'incorrect');
       const feedback = document.getElementById('feedback');
-
       if (isCorrect) {
         correctAnswers++;
         answered = true;
-        const config = window.elementSdk?.config || defaultConfig;
-        if (feedback) { feedback.className = 'feedback success'; feedback.textContent = config.success_message || defaultConfig.success_message; }
-
+        if (feedback) { feedback.className = 'feedback success'; feedback.textContent = defaultConfig.success_message; }
         const pandaCelebration = document.getElementById('pandaCelebration');
-        if (pandaCelebration) {
-          pandaCelebration.innerHTML = renderPandaOld();
-          makePandaInteractiveOld();
-        }
-
+        if (pandaCelebration) pandaCelebration.innerHTML = '🐼<div style="font-weight:700;margin-top:6px">¡Buen trabajo!</div>';
         const nextBtn = document.getElementById('nextButton');
         if (nextBtn) nextBtn.style.display = 'block';
-
-        // registrar resultat
-        const rec = {
-          question_id: question.id,
-          attempts: questionAttempts[question.id],
-          correct: true,
-          skipped: false,
-          timestamp: new Date().toISOString(),
-          game_session: gameSession
-        };
-        await recordResult(rec);
-
+        await recordResult({ question_id: question.id, attempts: questionAttempts[question.id], correct: true, skipped: false, timestamp: new Date().toISOString(), game_session: gameSession });
       } else {
-        // resposta incorrecta: mostrar feedback i reshuffle opcions abans de reactivar
-        if (feedback) { feedback.className = 'feedback error'; feedback.textContent = defaultConfig.error_message || 'Vuelve a intentarlo'; }
-
-        // reordenar opcions i mostrar-ho després d'animació curta
+        if (feedback) { feedback.className = 'feedback error'; feedback.textContent = defaultConfig.error_message; }
         setTimeout(() => {
           if (feedback) feedback.textContent = '';
           if (selectedButton) selectedButton.classList.remove('incorrect');
-          // recompute shuffle: assegurem que l'opció correcta també es mogui
           shuffleOptions(question);
           renderOptionsGrid();
-          // reactivar botons
-          const newButtons = document.querySelectorAll('.option-button');
-          newButtons.forEach(btn => { btn.disabled = false; btn.setAttribute('aria-disabled','false'); });
+          document.querySelectorAll('.option-button').forEach(btn => { btn.disabled = false; btn.setAttribute('aria-disabled','false'); });
           selectedAnswer = null;
         }, 900);
       }
     }
-
-    function nextQuestion() {
-      currentQuestionIndex++;
-      shuffledOptions = [];
-      if (currentQuestionIndex < questions.length) renderQuestion();
-      else showResults();
-    }
-
+    function nextQuestion() { currentQuestionIndex++; shuffledOptions = []; if (currentQuestionIndex < questions.length) renderQuestion(); else showResults(); }
     function showResults() {
       const content = document.getElementById('gameContent');
       const totalAttempts = Object.values(questionAttempts).reduce((a,b)=>a+b,0);
       const accuracy = Math.round((correctAnswers / questions.length) * 100);
       document.getElementById('progressFill').style.width = '100%';
-      const config = window.elementSdk?.config || defaultConfig;
       content.innerHTML = `
-        <div class="results-card">
-          <div class="panda-celebration">🐼🎉</div>
-          <div class="results-title">${config.complete_message || defaultConfig.complete_message}</div>
-          <div class="results-stats">
-            <div class="stat-card"><div class="stat-value">${correctAnswers}/${questions.length}</div><div class="stat-label">Respuestas Correctas</div></div>
-            <div class="stat-card"><div class="stat-value">${totalAttempts}</div><div class="stat-label">Intentos Totales</div></div>
+        <div style="text-align:center;padding:20px;">
+          <div style="font-size:64px">🐼🎉</div>
+          <h2>${defaultConfig.complete_message}</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;">
+            <div style="background:#f7fafc;padding:12px;border-radius:10px"><div style="font-size:28px;font-weight:700;color:#667eea">${correctAnswers}/${questions.length}</div><div style="font-size:12px;color:#718096">Respuestas correctas</div></div>
+            <div style="background:#f7fafc;padding:12px;border-radius:10px"><div style="font-size:28px;font-weight:700;color:#667eea">${totalAttempts}</div><div style="font-size:12px;color:#718096">Intentos totales</div></div>
           </div>
-          <div style="margin:10px 0;"><div class="stat-card"><div class="stat-value">${accuracy}%</div><div class="stat-label">Precisión</div></div></div>
-          <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;">
-            <button class="restart-button" id="restartBtn">Jugar de Nuevo</button>
-            <button class="small-btn" id="downloadThisSession">Descargar sesión (JSON)</button>
-          </div>
+          <div style="margin-top:8px"><button onclick="restartGame()" style="padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer">Jugar de nuevo</button></div>
         </div>
       `;
-
-      // salvar un resum de la sessió localment també
-      const sessionSummary = {
-        game_session: gameSession,
-        date: (new Date()).toISOString(),
-        correctAnswers,
-        totalQuestions: questions.length,
-        attemptsByQuestion: questionAttempts
-      };
-      storeResultLocal({session: sessionSummary});
-
-      document.getElementById('restartBtn').onclick = restartGame;
-      document.getElementById('downloadThisSession').onclick = function(){
-        const blob = new Blob([JSON.stringify(sessionSummary, null, 2)], {type:'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `session_${gameSession}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-      };
+      const sessionSummary = { game_session: gameSession, date: (new Date()).toISOString(), correctAnswers, totalQuestions: questions.length, attemptsByQuestion: questionAttempts };
+      storeResultLocal({ session: sessionSummary });
     }
+    function restartGame() { currentQuestionIndex = 0; gameSession = Date.now().toString(); questionAttempts = {}; correctAnswers = 0; answered = false; selectedAnswer = null; shuffledOptions = []; renderQuestion(); }
 
-    function restartGame() {
-      currentQuestionIndex = 0;
-      gameSession = Date.now().toString();
-      questionAttempts = {};
-      correctAnswers = 0;
-      answered = false;
-      selectedAnswer = null;
-      shuffledOptions = [];
-      renderQuestion();
-    }
-
-    /* ==================== SDK mocks i init ==================== */
+    /* ==================== SDK mocks ==================== */
     if (!window.dataSdk) {
-      window.dataSdk = {
-        async init(handler){ return { isOk: true }; },
-        async create(record){ console.log('mock save', record); return { isOk: true }; }
-      };
-    }
-    if (!window.elementSdk) {
-      window.elementSdk = { init(){}, setConfig(){}, config:{} };
+      window.dataSdk = { async init(){ return { isOk: true }; }, async create(record){ console.log('mock save', record); return { isOk: true }; } };
     }
 
+    /* ==================== Inicialización ==================== */
     async function initializeGame() {
-      // primer: carregar manifest públic i guardar audios a localStorage la primera vegada
       await loadAudioManifestAndPrefetch();
-
-      // després: carregar audios guardats localment (fallback)
       loadSavedAudios();
-
       try { await window.dataSdk.init({ onDataChanged: ()=>{} }); } catch(e){ console.warn('dataSdk.init fallo', e); }
       renderQuestion();
     }
 
-    /* ==================== Contraseña UI i mode admin ==================== */
+    /* ==================== Contraseña UI (dos contrasenyes) ==================== */
     const pwOverlay = document.getElementById('passwordOverlay');
     const pwInput = document.getElementById('passwordInput');
     const pwBtn = document.getElementById('passwordBtn');
@@ -763,11 +405,7 @@
     const adminControls = document.getElementById('adminControls');
 
     function showPasswordOverlay() {
-      if (!GAME_PASSWORD || GAME_PASSWORD === "") {
-        // si no hi ha contrasenya, iniciem sense admin (per seguretat no activem adminMode automàticament)
-        startGame(false);
-        return;
-      }
+      // Siempre mostrar modal al cargar; si quieres auto-login sin contraseña, cambia esta lógica
       pwOverlay.style.display = 'flex';
       pwInput.value = '';
       pwError.style.display = 'none';
@@ -789,80 +427,37 @@
 
     pwBtn.addEventListener('click', () => {
       const val = pwInput.value || '';
-      if (!GAME_PASSWORD || val === GAME_PASSWORD) {
-        // si coincideix, active adminMode (tu ets la profe)
-        const admin = !!GAME_PASSWORD && val === GAME_PASSWORD;
-        startGame(admin);
+      if (val === ADMIN_PASSWORD) {
+        startGame(true); // admin
+      } else if (val === STUDENT_PASSWORD) {
+        startGame(false); // alumno
       } else {
         pwError.style.display = 'block';
         setTimeout(()=> pwError.style.display = 'none', 2500);
       }
     });
+
     pwInput.addEventListener('keyup', (e)=> { if (e.key === 'Enter') pwBtn.click(); });
 
     window.addEventListener('DOMContentLoaded', () => {
       showPasswordOverlay();
-      // exposar per debug
       window.__juego = { audioFiles, audioFileNames, getStoredResults };
     });
 
-    /* ==================== Teclat global (accessibilitat) ==================== */
+    /* ==================== Atajos de teclado ==================== */
     window.addEventListener('keydown', (e) => {
-      // no interferir si un input té focus
       const active = document.activeElement;
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return;
-
-      if (e.code === 'Space') {
-        e.preventDefault();
-        playAudio();
-      }
+      if (e.code === 'Space') { e.preventDefault(); playAudio(); }
       if (['Digit1','Numpad1','Digit2','Numpad2','Digit3','Numpad3','Digit4','Numpad4'].includes(e.code)){
         let idx = null;
         if (e.code.includes('1')) idx = 0;
         else if (e.code.includes('2')) idx = 1;
         else if (e.code.includes('3')) idx = 2;
         else if (e.code.includes('4')) idx = 3;
-        if (idx !== null){
-          const btn = document.getElementById(`option${idx}`);
-          if (btn && !btn.disabled) btn.click();
-        }
+        if (idx !== null){ const btn = document.getElementById(`option${idx}`); if (btn && !btn.disabled) btn.click(); }
       }
-      if (e.key.toLowerCase() === 's') {
-        const skipBtn = document.getElementById('skipBtn');
-        if (skipBtn) skipBtn.click();
-      }
-    });
-
-    /* ==================== Botons admin (export/resultats) ==================== */
-    document.getElementById('exportAudiosBtn').addEventListener('click', ()=> {
-      if (!isAdminMode) { alert('Acceso denegado: inicia sesión como admin para usar esta función.'); return; }
-      exportAudiosPack();
-    });
-    document.getElementById('downloadResultsBtn').addEventListener('click', ()=>{
-      if (!isAdminMode) { alert('Acceso denegado: inicia sesión como admin para usar esta función.'); return; }
-      const all = getStoredResults();
-      if (!all || all.length === 0) { alert('No hay resultados guardados localmente.'); return; }
-      const blob = new Blob([JSON.stringify(all, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `resultados_juego_${(new Date()).toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    });
-
-    document.getElementById('downloadCsvBtn').addEventListener('click', ()=>{
-      if (!isAdminMode) { alert('Acceso denegado: inicia sesión como admin para usar esta función.'); return; }
-      const all = getStoredResults();
-      if (!all || all.length === 0) { alert('No hay resultados guardados localmente.'); return; }
-      const rows = [];
-      rows.push(['game_session','timestamp','question_id','attempts','correct','skipped'].join(','));
-      all.forEach(r => {
-        if (r.session) {
-          rows.push([r.session.game_session, r.session.date, 'SESSION_SUMMARY', JSON.stringify(r.session.attemptsByQuestion).replace(/,/g,';'), '', ''].join(','));
-        } else {
-          rows.push([r.game_session || '', r.timestamp || '', r.question_id || '', r.attempts || 0, r.correct ? '1':'0', r.skipped ? '1':'0'].join(','));
-        }
-      });
-      const blob = new Blob([rows.join('\n')], {type:'text/csv'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `resultados_juego_${(new Date()).toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      if (e.key.toLowerCase() === 's') { const skipBtn = document.getElementById('skipBtn'); if (skipBtn) skipBtn.click(); }
     });
 
   </script>
