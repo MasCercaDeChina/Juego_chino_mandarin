@@ -99,7 +99,7 @@
   <div class="container" id="mainContainer" aria-live="polite">
     <div class="header">
       <div>
-        <div class="title" id="gameTitle">Juego de pronunciación: Ponte a tono :)</div>
+        <div class="title" id="gameTitle">Juego de pronunciación</div>
         <div class="instructions" id="instructionsText">Escucha el audio y selecciona la respuesta correcta</div>
       </div>
 
@@ -128,7 +128,7 @@
       <h2 id="pwTitle">Introduce la contraseña</h2>
 
       <div class="form-row">
-        <label for="userName">Nombre usuario</label>
+        <label for="userName">Nombre usuario (máx. 30 caracteres)</label>
         <input id="userName" class="text-input" type="text" placeholder="Ej. María Pérez" aria-label="Nombre usuario" maxlength="30">
       </div>
 
@@ -185,7 +185,7 @@
     let gameSession = Date.now().toString();
     let questionAttempts = {};
     let correctAnswers = 0; // total correct (any attempt)
-    let firstTryCorrectCount = 0; // (kept for internal use but not shown in final label)
+    let firstTryCorrectCount = 0; // correcta en primer intent
     let firstTryCorrectByQuestion = {}; // { questionId: true/false }
     let answered = false;
     let selectedAnswer = null;
@@ -422,58 +422,56 @@
 
     function nextQuestion(){ currentQuestionIndex++; shuffledOptions=[]; if(currentQuestionIndex<questions.length) renderQuestion(); else showResults(); }
 
-    /* ========= Redesigned results screen ========= */
-  function showResults(){
-  const content = document.getElementById('gameContent');
-  const totalAttempts = Object.values(questionAttempts).reduce((a,b)=>a+b,0);
-  document.getElementById('progressFill').style.width = '100%';
+    /* ========== Result screen (shows firstTryCorrectCount as "Respuestas acertadas") ========= */
+    function showResults(){
+      const content = document.getElementById('gameContent');
+      const totalAttempts = Object.values(questionAttempts).reduce((a,b)=>a+b,0);
+      document.getElementById('progressFill').style.width = '100%';
 
-  // Desglose por pregunta (intentos)
-  const perQuestionLines = questions.map((q, idx) => {
-    const attempts = questionAttempts[q.id] || 0;
-    return `<div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#fff;margin-bottom:8px;box-shadow:0 6px 18px rgba(12,20,40,0.04)"><div><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong></div><div style="font-weight:700;color:#334155">${attempts}</div></div>`;
-  }).join('');
+      // Desglose por pregunta (intentos)
+      const perQuestionLines = questions.map((q, idx) => {
+        const attempts = questionAttempts[q.id] || 0;
+        return `<div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#fff;margin-bottom:8px;box-shadow:0 6px 18px rgba(12,20,40,0.04)"><div><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong></div><div style="font-weight:700;color:#334155">${attempts}</div></div>`;
+      }).join('');
 
-  content.innerHTML = `
-    <div style="text-align:center;padding:26px;">
-      <div style="font-size:80px">🐼🎉</div>
-      <h2 style="margin:8px 0 6px">${defaultConfig.complete_message}</h2>
+      content.innerHTML = `
+        <div style="text-align:center;padding:26px;">
+          <div style="font-size:64px">🐼🎉</div>
+          <h2 style="margin:8px 0 6px">${defaultConfig.complete_message}</h2>
 
-      <div style="margin-top:18px;text-align:left;max-width:720px;margin-left:auto;margin-right:auto">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(90deg,#f8fafc,#ffffff);box-shadow:0 10px 30px rgba(11,22,48,0.04);margin-bottom:12px">
-          <div>
-            <div style="font-size:13px;color:#94a3b8">Respuestas acertadas</div>
-            <div style="font-size:28px;font-weight:800;color:#667eea">${firstTryCorrectCount}/${questions.length}</div>
+          <div style="margin-top:18px;text-align:left;max-width:720px;margin-left:auto;margin-right:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(90deg,#f8fafc,#ffffff);box-shadow:0 10px 30px rgba(11,22,48,0.04);margin-bottom:12px">
+              <div>
+                <div style="font-size:13px;color:#94a3b8">Respuestas acertadas</div>
+                <div style="font-size:28px;font-weight:800;color:#667eea">${firstTryCorrectCount}/${questions.length}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:13px;color:#94a3b8">Intentos totales</div>
+                <div style="font-size:22px;font-weight:700;color:#2d3748">${totalAttempts}</div>
+              </div>
+            </div>
+
+            <div style="font-size:15px;font-weight:700;margin-bottom:8px">Detalle intentos:</div>
+            ${perQuestionLines}
           </div>
-          <div style="text-align:right">
-            <div style="font-size:13px;color:#94a3b8">Intentos totales</div>
-            <div style="font-size:22px;font-weight:700;color:#2d3748">${totalAttempts}</div>
-          </div>
+
+          <div style="margin-top:18px"><button onclick="restartGame()" style="padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer">Jugar de nuevo</button></div>
         </div>
+      `;
 
-        <div style="font-size:15px;font-weight:700;margin-bottom:8px">Detalle intentos:</div>
-        ${perQuestionLines}
-      </div>
-
-      <div style="margin-top:18px"><button onclick="restartGame()" style="padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer">Jugar de nuevo</button></div>
-    </div>
-  `;
-
-  // guardem sessió resum com a registre (incloem firstTryCorrectCount)
-  const sessionSummary = {
-    game_session: gameSession,
-    date: (new Date()).toISOString(),
-    // note: correctAnswers sigue guardado si el vols, però el que es mostra és firstTryCorrectCount
-    correctAnswers,
-    firstTryCorrectCount,
-    totalQuestions: questions.length,
-    attemptsByQuestion: questionAttempts,
-    user_name: localStorage.getItem('juego_user_name')||'',
-    user_group: localStorage.getItem('juego_user_group')||''
-  };
-  storeResultLocal({ session: sessionSummary });
-}
-
+      // guardem sessió resum com a registre (incloem firstTryCorrectCount)
+      const sessionSummary = {
+        game_session: gameSession,
+        date: (new Date()).toISOString(),
+        correctAnswers,
+        firstTryCorrectCount,
+        totalQuestions: questions.length,
+        attemptsByQuestion: questionAttempts,
+        user_name: localStorage.getItem('juego_user_name')||'',
+        user_group: localStorage.getItem('juego_user_group')||''
+      };
+      storeResultLocal({ session: sessionSummary });
+    }
 
     function restartGame(){
       currentQuestionIndex = 0;
@@ -514,8 +512,6 @@
     const userNameInput = document.getElementById('userName');
     const userGroupInput = document.getElementById('userGroup');
     const adminPanel = document.getElementById('adminPanel');
-    const showAdminResultsBtn = document.getElementById('showAdminResultsBtn');
-    const downloadCsvBtn = document.getElementById('downloadCsvBtn');
 
     // Pre-fill desde localStorage
     function prefillUserInfo(){
@@ -535,6 +531,7 @@
       setTimeout(()=> userNameInput.focus(), 200);
     }
 
+    // START GAME: también atamos aquí los handlers admin para asegurarnos que existen
     function startGame(admin=false){
       isAdminMode = admin;
       if(isAdminMode){
@@ -544,10 +541,52 @@
         adminControls.style.visibility = 'hidden';
         adminControls.setAttribute('aria-hidden','true');
       }
+
+      // Attach admin button handlers (safe: elements exist in DOM)
+      const showAdminResultsBtnEl = document.getElementById('showAdminResultsBtn');
+      const downloadCsvBtnEl = document.getElementById('downloadCsvBtn');
+      const downloadResultsBtnEl = document.getElementById('downloadResultsBtn');
+      const exportAudiosBtnEl = document.getElementById('exportAudiosBtn');
+
+      if (showAdminResultsBtnEl) {
+        showAdminResultsBtnEl.onclick = () => {
+          if (adminPanel.style.display === 'block') {
+            adminPanel.style.display = 'none';
+          } else {
+            buildAdminTable();
+            adminPanel.style.display = 'block';
+          }
+        };
+      }
+      if (downloadCsvBtnEl) {
+        downloadCsvBtnEl.onclick = () => exportCsv(getStoredResults(), 'resultados_juego_all.csv');
+      }
+      if (downloadResultsBtnEl) {
+        downloadResultsBtnEl.onclick = () => {
+          const data = getStoredResults();
+          alert(`Registros locales: ${data.length}. Puedes usar "Ver resultados" para verlos o "Exportar CSV" para descargarlos.`);
+        };
+      }
+      if (exportAudiosBtnEl) {
+        exportAudiosBtnEl.onclick = () => {
+          const items = [];
+          for(let i=0;i<questions.length;i++){
+            const name = localStorage.getItem(audioKeyName(i));
+            const data = localStorage.getItem(audioKeyData(i));
+            if(name && data) items.push({index:i,name,hasData:true});
+            else if(name) items.push({index:i,name,hasData:false});
+            else items.push({index:i,name:'(no cargado)',hasData:false});
+          }
+          alert('Estado audios: ' + items.map(it=>`Q${it.index+1}: ${it.name}${it.hasData ? ' (guardado)': ''}`).join(' | '));
+        };
+      }
+
+      // guardar info d'usuari a localStorage (recorda entre sessions)
       const name = normalizeInput(userNameInput.value);
       const group = normalizeInput(userGroupInput.value);
-      if(name) localStorage.setItem('juego_user_name', name);
-      if(group) localStorage.setItem('juego_user_group', group);
+      if (name) localStorage.setItem('juego_user_name', name);
+      if (group) localStorage.setItem('juego_user_group', group);
+
       pwOverlay.style.display = 'none';
       initializeGame();
     }
@@ -636,22 +675,6 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     }
-
-    showAdminResultsBtn?.addEventListener?.('click', ()=>{
-      if(adminPanel.style.display === 'block'){
-        adminPanel.style.display = 'none';
-      } else {
-        buildAdminTable();
-        adminPanel.style.display = 'block';
-      }
-    });
-
-    downloadCsvBtn?.addEventListener?.('click', ()=> exportCsv(getStoredResults(), 'resultados_juego_all.csv'));
-
-    document.getElementById('downloadResultsBtn')?.addEventListener('click', ()=> {
-      const data = getStoredResults();
-      alert(`Registros locales: ${data.length}. Puedes usar "Ver resultados" para verlos o "Exportar CSV" para descargarlos.`);
-    });
 
   </script>
 </body>
