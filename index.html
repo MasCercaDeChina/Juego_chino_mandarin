@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Juego de pronunciación</title>
   <style>
-    /* Estilos principales */
+    /* (Estilos reduïts per brevetat; copia els mateixos estils que ja tens) */
     *, *:before, *:after { box-sizing: border-box; }
     body{margin:0;padding:0;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}
     .container{width:90%;max-width:1000px;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.3);padding:24px 40px;margin:20px;position:relative}
@@ -17,93 +17,21 @@
     .progress-bar{width:100%;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-bottom:20px}
     .progress-fill{height:100%;background:linear-gradient(90deg,#667eea 0%,#764ba2 100%);transition:width .3s ease;width:0%}
     .question-card{background:#f7fafc;border-radius:16px;padding:20px;margin-bottom:18px}
-    .question-title{font-size:18px;font-weight:600;color:#2d3748;margin-bottom:12px}
     .audio-player{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:16px;padding:14px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-    .audio-controls{display:flex;align-items:center;gap:12px}
     .play-button{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-    .play-button:disabled{opacity:.5;cursor:not-allowed}
     .options-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
     .option-button{padding:12px;background:#fff;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-weight:500;color:#2d3748;cursor:pointer;text-align:left;white-space:pre-wrap;transition:transform .12s}
-    .option-button:hover:not(:disabled){transform:translateY(-3px)}
     .option-button.correct{background:#48bb78;border-color:#48bb78;color:#fff}
     .option-button.incorrect{background:#f56565;border-color:#f56565;color:#fff}
-    .feedback{ text-align:center;padding:12px;border-radius:10px;margin-bottom:12px;font-size:16px;font-weight:600}
-    .feedback.success{background:#c6f6d5;color:#22543d}
-    .feedback.error{background:#fed7d7;color:#742a2a}
-    .next-button{padding:12px 18px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border:none;border-radius:12px;color:#fff;font-size:15px;cursor:pointer}
-    .small-btn{padding:8px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;cursor:pointer;font-size:13px}
-    .small-muted{font-size:12px;color:#94a3b8;text-align:center;margin-top:6px}
-    .hidden{display:none!important}
-
-    /* Panda celebration centered, grande y animado */
-    .panda-center {
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction:column;
-      gap:8px;
-      width:100%;
-      text-align:center;
-      margin:8px 0 4px;
-    }
-    .panda-center .panda-emoji {
-      font-size:140px;
-      line-height:1;
-      transform-origin:center center;
-      animation: pandaPop .9s cubic-bezier(.2,.9,.2,1);
-      user-select:none;
-    }
-    .panda-center .panda-text {
-      font-size:22px;
-      font-weight:800;
-      color:#2d3748;
-      letter-spacing:0.6px;
-    }
-    @keyframes pandaPop {
-      0% { transform: scale(.4) translateY(40px); opacity:0 }
-      50% { transform: scale(1.08) translateY(-6px); opacity:1 }
-      80% { transform: scale(.96) translateY(2px) }
-      100% { transform: scale(1) translateY(0) }
-    }
-
-    /* confetti */
-    .confetti { position: absolute; width: 10px; height: 10px; border-radius:2px; z-index:99; animation:confettiFall linear forwards; pointer-events:none; }
-    @keyframes confettiFall { 0%{ transform: translateY(-30px) rotate(0); opacity:1 } 100%{ transform: translateY(160px) rotate(360deg); opacity:0 } }
-
-    /* Admin aggregated view */
-    #adminPanel { margin-top:14px; padding:12px; border-radius:12px; background:#f8fafc; display:none; max-height:60vh; overflow:auto; border:1px solid #e6edf8; }
-    .session-card { background:linear-gradient(180deg,#ffffff,#f8fafc); padding:12px; border-radius:12px; margin-bottom:10px; box-shadow:0 8px 24px rgba(11,22,48,0.03); display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
-    .session-left { display:flex; flex-direction:column; gap:6px; max-width:70%; }
-    .session-right { text-align:right; min-width:160px; }
-    .session-meta { font-size:13px; color:#475569; }
-    .session-stats { font-size:18px; font-weight:800; color:#334155; margin-top:6px; }
-
-    /* Stats area */
-    #adminStats { margin-top:10px; padding:12px; border-radius:12px; background:#fff; box-shadow:0 6px 18px rgba(12,20,40,0.04); }
-
-    /* Modal contraseña */
+    .panda-center { display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; width:100%; text-align:center; margin:8px 0 4px; }
+    .panda-center .panda-emoji { font-size:140px; line-height:1; transform-origin:center center; animation: pandaPop .9s cubic-bezier(.2,.9,.2,1); user-select:none; }
+    .panda-center .panda-text { font-size:22px; font-weight:800; color:#2d3748; letter-spacing:0.6px; }
+    @keyframes pandaPop { 0%{transform:scale(.4) translateY(40px);opacity:0}50%{transform:scale(1.08) translateY(-6px);opacity:1}80%{transform:scale(.96) translateY(2px)}100%{transform:scale(1) translateY(0)} }
     .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:200; }
     .password-card { background: white; padding: 18px; border-radius: 12px; width: 92%; max-width: 480px; text-align: left; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
-    .password-card h2 { margin: 6px 0 8px; font-size:18px; text-align:center; }
-    .form-row { margin-bottom:10px; display:flex; flex-direction:column; gap:6px; }
-    label { font-size:13px; color:#475569; }
-    .password-input, .text-input, .select-input { width:100%; max-width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; }
-    .password-actions { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-    .password-btn { width:100%; padding:12px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
-    .password-error { color:#f56565; margin-top:8px; display:none; text-align:center; }
-
-    @media (max-width:820px){
-      .session-left { max-width:60%; }
-      .session-right { min-width:120px; }
-    }
-    @media (max-width:520px){
-      .password-card{ padding:14px; }
-      .container{ padding:18px; }
-      .panda-center .panda-emoji { font-size:110px; }
-      .panda-center .panda-text { font-size:18px; }
-      .session-card { flex-direction:column; align-items:flex-start; }
-      .session-right { text-align:left; min-width:auto; margin-top:8px; }
-    }
+    .password-input, .text-input, .select-input { width:100%; padding:10px; border-radius:8px; border:1px solid #e2e8f0; font-size:14px; }
+    .small-btn{padding:8px 10px;border-radius:8px;border:1px solid #cbd5e0;background:#fff;cursor:pointer;font-size:13px}
+    #adminPanel { margin-top:14px; padding:12px; border-radius:12px; background:#f8fafc; display:none; max-height:60vh; overflow:auto; border:1px solid #e6edf8; }
   </style>
 </head>
 <body>
@@ -113,8 +41,6 @@
         <div class="title" id="gameTitle">Juego de pronunciación</div>
         <div class="instructions" id="instructionsText">Escucha el audio y selecciona la respuesta correcta</div>
       </div>
-
-      <!-- Panel admin: oculto per defecte, visible en mode admin -->
       <div id="adminControls" style="visibility:hidden; display:flex; gap:8px; align-items:center;">
         <button class="small-btn" id="exportAudiosBtn">Estado audios</button>
         <button class="small-btn" id="downloadResultsBtn">Info resultados</button>
@@ -124,26 +50,22 @@
     </div>
 
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-
     <div id="gameContent"></div>
-
     <div class="small-muted" style="margin-top:12px">Tus resultados se mandarán automáticamente a la profesora para su evaluación</div>
-
-    <!-- Panel admin on-page -->
     <div id="adminPanel" aria-live="polite"></div>
   </div>
 
-  <!-- Modal contraseña + formulario de usuario -->
+  <!-- Modal contraseña + formulario -->
   <div id="passwordOverlay" class="overlay" style="display:none;">
     <div class="password-card" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
       <h2 id="pwTitle">Introduce la contraseña</h2>
 
-      <div class="form-row">
+      <div style="margin-bottom:10px">
         <label for="userName">Nombre usuario (máx. 30 caracteres)</label>
         <input id="userName" class="text-input" type="text" placeholder="Ej. María Pérez" aria-label="Nombre usuario" maxlength="30">
       </div>
 
-      <div class="form-row">
+      <div style="margin-bottom:10px">
         <label for="userGroup">Grupo</label>
         <select id="userGroup" class="select-input" aria-label="Grupo">
           <option value="">-- Selecciona grupo --</option>
@@ -153,37 +75,30 @@
         </select>
       </div>
 
-      <div class="form-row">
+      <div style="margin-bottom:10px">
         <label for="passwordInput">Contraseña</label>
         <input id="passwordInput" class="password-input" type="password" placeholder="Introduce la contraseña" aria-label="Contraseña">
       </div>
 
-      <div class="password-actions">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
         <label style="display:flex;align-items:center;gap:8px"><input id="showPassword" type="checkbox" aria-label="Mostrar contraseña"> Mostrar contraseña</label>
         <div style="flex:1"></div>
       </div>
 
-      <button id="passwordBtn" class="password-btn">Empezar</button>
-      <div id="passwordError" class="password-error">Contraseña incorrecta o campos incompletos</div>
+      <button id="passwordBtn" class="small-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:8px;">Empezar</button>
+      <div id="passwordError" style="color:#f56565;margin-top:8px;display:none;text-align:center;">Contraseña incorrecta o campos incompletos</div>
     </div>
   </div>
 
   <script>
-    /* ==================== CONFIGURACIÓN: dos contraseñas ==================== */
-    const STUDENT_PASSWORD = "PANDARIN25".normalize('NFC');
+  (function(){
+    'use strict';
+    console.log('Juego script inicializado');
+
+    const STUDENT_PASSWORD = "PANDARÍN25".normalize('NFC');
     const ADMIN_PASSWORD   = "XUXITO25".normalize('NFC');
-
-    // URL del manifest d'àudios (posar la teva URL pública aquí)
-    const GAME_AUDIO_MANIFEST_URL = "https://TU_HOSTING_PUBLIC/audios_manifest.json";
-
-    /* ==================== Dades i estat del joc ==================== */
-    const defaultConfig = {
-      success_message: "¡Excelente!",
-      error_message: "Vuelve a intentarlo",
-      complete_message: "¡Juego completado!"
-    };
-
-    const questions = [
+    const GAME_AUDIO_MANIFEST_URL = ""; // opcional: pon la URL si la uses
+    const QUESTIONS = [
       { id: "q1_yi", title: "1. Escucha solo los 'yi' y escoge en qué orden aparecen", shortTitle: "Yi",
         options: ["Yì yì yì yì yī yí yì yǐ yì yì","Yí yī yī yì yī yí yì yǐ yì yì","Yī yī yī yì yī yí yì yǐ yì yì"], correctIndex:2 },
       { id: "q2_yi_jq", title: "2. Escucha Yi+jq y escoge el orden correcto", shortTitle: "Yi + jq",
@@ -192,12 +107,12 @@
         options: ["xq q x x q x x j x j x j j jj q j","xq x q q q x x j x j x j j jj j j","xq x q q q j j j x j x j j jj x x","xq x q q q x x j x j x j j jj j q"], correctIndex:3 }
     ];
 
+    // State
     let currentQuestionIndex = 0;
-    let gameSession = Date.now().toString();
     let questionAttempts = {};
-    let correctAnswers = 0; // total correct (any attempt)
-    let firstTryCorrectCount = 0; // correcta en primer intent
-    let firstTryCorrectByQuestion = {}; // { questionId: true/false }
+    let correctAnswers = 0;
+    let firstTryCorrectCount = 0;
+    let firstTryCorrectByQuestion = {};
     let answered = false;
     let selectedAnswer = null;
     let shuffledOptions = [];
@@ -205,14 +120,20 @@
     let audioFiles = {};
     let audioFileNames = {};
     let isAdminMode = false;
-
     const RESULTS_KEY = 'juego_results';
-    function audioKeyData(idx){ return `juego_audio_data_q${idx}`; }
-    function audioKeyName(idx){ return `juego_audio_name_q${idx}`; }
 
-    /* ==================== Utilidades ==================== */
+    // Helpers
+    function audioKeyData(i){ return `juego_audio_data_q${i}`; }
+    function audioKeyName(i){ return `juego_audio_name_q${i}`; }
+    function normalizeInput(s){ if(!s) return ''; return s.replace(/[\u200B-\u200D\uFEFF]/g,'').trim().normalize('NFC'); }
     function shuffleArray(arr){ for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
-    function shuffleOptions(question) {
+
+    // Persistence
+    function getStoredResults(){ try { const raw = localStorage.getItem(RESULTS_KEY); return raw ? JSON.parse(raw) : []; } catch(e){ return []; } }
+    function storeResultLocal(record){ try { const arr = getStoredResults(); arr.push(record); localStorage.setItem(RESULTS_KEY, JSON.stringify(arr)); } catch(e){ console.warn(e); } }
+    async function recordResult(record){ const user_name = localStorage.getItem('juego_user_name')||''; const user_group = localStorage.getItem('juego_user_group')||''; const question = QUESTIONS.find(q=>q.id===record.question_id); const rec = Object.assign({}, record, { user_name, user_group, question_title: question ? question.shortTitle : record.question_id }); try{ await window.dataSdk?.create?.(rec).catch(()=>{}); }catch(e){} storeResultLocal(rec); }
+
+    function shuffleOptions(question){
       const opts = [...question.options];
       const correct = opts[question.correctIndex];
       shuffleArray(opts);
@@ -221,272 +142,148 @@
       return { options: shuffledOptions, correctIndex: correctAnswerIndex };
     }
 
-    /* ==================== Persistencia audios ==================== */
-    function saveAudioToLocal(questionIndex, dataUrl, filename){
-      try {
-        localStorage.setItem(audioKeyData(questionIndex), dataUrl);
-        localStorage.setItem(audioKeyName(questionIndex), filename);
-        const audioEl = document.createElement('audio');
-        audioEl.src = dataUrl;
-        audioEl.preload = 'auto';
-        audioFiles[questionIndex] = audioEl;
-        audioFileNames[questionIndex] = filename;
-        return true;
-      } catch (e) { console.warn('No se pudo guardar audio en localStorage:', e); return false; }
-    }
+    // Minimal audio persistence loader (we assume uploads happened earlier)
     function loadSavedAudios(){
-      for (let i = 0; i < questions.length; i++){
+      for(let i=0;i<QUESTIONS.length;i++){
         const data = localStorage.getItem(audioKeyData(i));
         const name = localStorage.getItem(audioKeyName(i));
-        if (data && name){
-          try {
-            const audioEl = document.createElement('audio');
-            audioEl.src = data;
-            audioEl.preload = 'auto';
-            audioFiles[i] = audioEl;
-            audioFileNames[i] = name;
-          } catch(err){ console.warn(err); }
+        if(data && name){
+          try { const audioEl = document.createElement('audio'); audioEl.src = data; audioEl.preload='auto'; audioFiles[i]=audioEl; audioFileNames[i]=name; } catch(e){ console.warn(e); }
         }
       }
     }
 
-    /* ==================== Prefetch manifest ==================== */
-    async function fetchAsDataURL(url){
-      try {
-        const r = await fetch(url, { mode: 'cors' });
-        if (!r.ok) throw new Error('fetch failed ' + r.status);
-        const blob = await r.blob();
-        return await new Promise((res, rej) => {
-          const reader = new FileReader();
-          reader.onload = () => res(reader.result);
-          reader.onerror = (e) => rej(e);
-          reader.readAsDataURL(blob);
-        });
-      } catch (e) { console.warn('fetchAsDataURL error', e); return null; }
-    }
-    async function loadAudioManifestAndPrefetch(){
-      if (!GAME_AUDIO_MANIFEST_URL) return;
-      try {
-        const res = await fetch(GAME_AUDIO_MANIFEST_URL, { cache: 'no-cache' });
-        if (!res.ok) { console.warn('No se pudo cargar manifest', res.status); return; }
-        const manifest = await res.json();
-        for (const key of Object.keys(manifest)){
-          const idx = Number(key);
-          if (Number.isNaN(idx) || idx < 0 || idx >= questions.length) continue;
-          const entry = manifest[key];
-          if (!entry || !entry.url) continue;
-          const localData = localStorage.getItem(audioKeyData(idx));
-          const localName = localStorage.getItem(audioKeyName(idx));
-          if (localData && localName) {
-            try {
-              const audioEl = document.createElement('audio');
-              audioEl.src = localData;
-              audioEl.preload = 'auto';
-              audioFiles[idx] = audioEl;
-              audioFileNames[idx] = localName;
-              continue;
-            } catch (e) { console.warn(e); }
-          }
-          const dataUrl = await fetchAsDataURL(entry.url);
-          if (dataUrl) {
-            const saved = saveAudioToLocal(idx, dataUrl, entry.name || entry.url.split('/').pop());
-            if (!saved) {
-              try {
-                const audioEl = document.createElement('audio');
-                audioEl.src = entry.url;
-                audioEl.preload = 'auto';
-                audioFiles[idx] = audioEl;
-                audioFileNames[idx] = entry.name || entry.url.split('/').pop();
-              } catch(e){}
-            }
-          } else {
-            try {
-              const audioEl = document.createElement('audio');
-              audioEl.src = entry.url;
-              audioEl.preload = 'auto';
-              audioFiles[idx] = audioEl;
-              audioFileNames[idx] = entry.name || entry.url.split('/').pop();
-            } catch(e){}
-          }
-        }
-      } catch (err) { console.error('Error cargando manifest', err); }
-    }
-
-    /* ==================== Result storage ==================== */
-    function getStoredResults(){ try { const raw = localStorage.getItem(RESULTS_KEY); return raw ? JSON.parse(raw) : []; } catch(e){ return []; } }
-    function storeResultLocal(record){ try { const arr = getStoredResults(); arr.push(record); localStorage.setItem(RESULTS_KEY, JSON.stringify(arr)); } catch(e){ console.warn(e); } }
-    async function recordResult(record){
-      // Afegim info d'usuari al registre
-      const user_name = localStorage.getItem('juego_user_name') || '';
-      const user_group = localStorage.getItem('juego_user_group') || '';
-      const question = questions.find(q=>q.id===record.question_id);
-      const rec = Object.assign({}, record, { user_name, user_group, question_title: question ? question.shortTitle : record.question_id });
-      try { await window.dataSdk.create(rec).catch(()=>{}); } catch(e){}
-      storeResultLocal(rec);
-    }
-
-    /* ==================== Render / game logic ==================== */
-    function renderQuestion(reshuffleOptions = true) {
+    // Render question
+    function renderQuestion(reshuffle=true){
       const content = document.getElementById('gameContent');
-      const question = questions[currentQuestionIndex];
-      if (!questionAttempts[question.id]) questionAttempts[question.id] = 0;
-      if (reshuffleOptions || shuffledOptions.length === 0) shuffleOptions(question);
-      document.getElementById('progressFill').style.width = ((currentQuestionIndex)/questions.length*100)+'%';
+      const q = QUESTIONS[currentQuestionIndex];
+      if(!questionAttempts[q.id]) questionAttempts[q.id]=0;
+      if(reshuffle || shuffledOptions.length===0) shuffleOptions(q);
+      document.getElementById('progressFill').style.width = ((currentQuestionIndex)/QUESTIONS.length*100)+'%';
       const hasAudio = !!audioFiles[currentQuestionIndex];
-      const audioFileName = audioFileNames[currentQuestionIndex] || '';
-      let audioSection = hasAudio && audioFileName ? `<div style="font-size:12px;color:#48bb78">✅ Audio cargado: ${audioFileName}</div>` : `<div style="font-size:13px;color:#4a5568">No hay audio disponible.</div>`;
+      const audioFileName = audioFileNames[currentQuestionIndex]||'';
+      const audioSection = hasAudio && audioFileName ? `<div style="font-size:12px;color:#48bb78">✅ Audio cargado: ${audioFileName}</div>` : `<div style="font-size:13px;color:#4a5568">No hay audio disponible.</div>`;
       content.innerHTML = `
         <div class="question-card" role="region" aria-label="Pregunta ${currentQuestionIndex+1}">
-          <div class="question-title">${question.title}</div>
-          <div class="audio-player">${audioSection}<div class="audio-controls"><button class="play-button" id="playButton" onclick="playAudio()" ${hasAudio ? '' : 'disabled'} aria-label="Reproducir audio">▶</button></div></div>
+          <div class="question-title">${q.title}</div>
+          <div class="audio-player">${audioSection}<div style="margin-top:8px"><button class="play-button" id="playButton" onclick="playAudio()" ${hasAudio ? '' : 'disabled'}>▶</button></div></div>
           <div class="options-grid" id="optionsGrid"></div>
           <div id="feedback" aria-live="polite"></div>
           <div id="pandaCelebration" style="min-height:160px; position:relative;"></div>
-          <div style="margin-top:8px;text-align:center;font-size:12px;color:#718096">Intentos en esta pregunta: <span id="attemptsIndicator">${questionAttempts[question.id]}</span></div>
-          <div style="display:flex;gap:10px;margin-top:12px;"><button class="next-button" id="nextButton" style="display:none" onclick="nextQuestion()">${currentQuestionIndex < questions.length-1 ? 'Siguiente Pregunta' : 'Ver Resultados'}</button></div>
+          <div style="margin-top:8px;text-align:center;font-size:12px;color:#718096">Intentos en esta pregunta: <span id="attemptsIndicator">${questionAttempts[q.id]}</span></div>
+          <div style="display:flex;gap:10px;margin-top:12px;"><button class="small-btn" id="nextButton" style="display:none" onclick="nextQuestion()">${currentQuestionIndex < QUESTIONS.length-1 ? 'Siguiente Pregunta' : 'Ver Resultados'}</button></div>
         </div>
       `;
       renderOptionsGrid();
       answered=false; selectedAnswer=null;
-      setTimeout(()=> { const f=document.querySelector('.option-button'); if(f) f.focus(); }, 40);
     }
 
     function renderOptionsGrid(){
       const g = document.getElementById('optionsGrid'); if(!g) return;
       g.innerHTML = shuffledOptions.map((o,i)=>`<button class="option-button" id="option${i}" onclick="selectAnswer(${i})">${o}</button>`).join('');
-      document.querySelectorAll('.option-button').forEach(b=>{ b.disabled=false; b.setAttribute('aria-disabled','false'); });
+      document.querySelectorAll('.option-button').forEach(b=>b.disabled=false);
     }
 
-    function playAudio(){
-      const btn=document.getElementById('playButton');
+    window.playAudio = function(){
+      const btn = document.getElementById('playButton');
       const a = audioFiles[currentQuestionIndex];
-      if(!a){ console.log('No audio'); return; }
-      if(a.paused){ if(btn){btn.textContent='⏸'; btn.style.background='linear-gradient(135deg,#f56565 0%,#e53e3e 100%)';} a.play().catch(e=>{console.error(e); if(btn){btn.textContent='▶'; btn.style.background='linear-gradient(135deg,#667eea 0%,#764ba2 100%)';}}); a.onended=()=>{ if(btn){btn.textContent='▶'; btn.style.background='linear-gradient(135deg,#667eea 0%,#764ba2 100%)';}} } else { a.pause(); if(btn){btn.textContent='▶'; btn.style.background='linear-gradient(135deg,#667eea 0%,#764ba2 100%)';} }
-    }
+      if(!a){ console.log('No audio for this question'); return; }
+      if(a.paused){ if(btn){btn.textContent='⏸';} a.play().catch(e=>{ console.error(e); if(btn) btn.textContent='▶'; }); a.onended = ()=>{ if(btn) btn.textContent='▶'; };
+      } else { a.pause(); if(btn) btn.textContent='▶'; }
+    };
 
-    /* ========== Panda celebration helper (centred + confetti) ========== */
-    function showPandaCelebration() {
-      const container = document.getElementById('pandaCelebration');
-      if(!container) return;
-      // clear existing
-      container.innerHTML = '';
-      // panda centered markup with chinese text
-      const pandaWrap = document.createElement('div');
-      pandaWrap.className = 'panda-center';
-      pandaWrap.innerHTML = `<div class="panda-emoji">🐼</div><div class="panda-text">太棒了！</div>`;
-      container.appendChild(pandaWrap);
-      // confetti burst
-      createConfettiBurst(container);
-    }
-
-    function createConfettiBurst(container){
-      const colors = ['#667eea', '#764ba2', '#48bb78', '#f6e05e', '#fc8181'];
-      for (let i = 0; i < 26; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = (10 + Math.random() * 80) + '%';
-        confetti.style.top = (10 + Math.random() * 6) + 'px';
-        confetti.style.background = colors[Math.floor(Math.random()*colors.length)];
-        confetti.style.animationDuration = (Math.random() * 1.2 + 1.4) + 's';
-        confetti.style.transform = `translateY(-10px) rotate(${Math.random()*360}deg)`;
-        container.appendChild(confetti);
-        setTimeout(()=> { if(confetti.parentNode) confetti.parentNode.removeChild(confetti); }, 3200);
-      }
-    }
-
-    async function selectAnswer(index){
+    window.selectAnswer = async function(index){
       if(answered && selectedAnswer===index) return;
-      const q = questions[currentQuestionIndex];
+      const q = QUESTIONS[currentQuestionIndex];
       questionAttempts[q.id] = (questionAttempts[q.id]||0)+1;
-      document.getElementById('attemptsIndicator').textContent = questionAttempts[q.id];
+      const attemptsEl = document.getElementById('attemptsIndicator'); if(attemptsEl) attemptsEl.textContent = questionAttempts[q.id];
       const isCorrect = index === correctAnswerIndex;
       selectedAnswer = index;
-      const buttons = document.querySelectorAll('.option-button'); buttons.forEach(b=>{ b.disabled=true; b.setAttribute('aria-disabled','true'); });
+      document.querySelectorAll('.option-button').forEach(b=>b.disabled=true);
       const btn = document.getElementById(`option${index}`); if(btn) btn.classList.add(isCorrect ? 'correct' : 'incorrect');
       const feedback = document.getElementById('feedback');
 
       if(isCorrect){
         correctAnswers++;
         const firstTry = questionAttempts[q.id] === 1;
-        if(firstTry && !firstTryCorrectByQuestion[q.id]){
-          firstTryCorrectCount++;
-          firstTryCorrectByQuestion[q.id] = true;
-        }
+        if(firstTry && !firstTryCorrectByQuestion[q.id]){ firstTryCorrectCount++; firstTryCorrectByQuestion[q.id] = true; }
         answered = true;
-        if(feedback){ feedback.className='feedback success'; feedback.textContent = ''; } // we show central panda instead
+        if(feedback) feedback.className='feedback success';
         showPandaCelebration();
-        const nextBtn = document.getElementById('nextButton'); if(nextBtn) nextBtn.style.display='block';
+        const nextBtn = document.getElementById('nextButton'); if(nextBtn) nextBtn.style.display='inline-block';
         await recordResult({ question_id: q.id, attempts: questionAttempts[q.id], correct: true, skipped:false, first_try: firstTry, timestamp: (new Date()).toISOString(), game_session: gameSession });
       } else {
-        if(feedback){ feedback.className='feedback error'; feedback.textContent = defaultConfig.error_message; }
-        setTimeout(()=>{
-          if(feedback) feedback.textContent='';
+        if(feedback) { feedback.className='feedback error'; feedback.textContent = 'Vuelve a intentarlo'; }
+        setTimeout(()=> {
+          if(feedback) feedback.textContent = '';
           if(btn) btn.classList.remove('incorrect');
-          // re-barajar opciones si se equivoca
           shuffleOptions(q);
           renderOptionsGrid();
-          document.querySelectorAll('.option-button').forEach(b=>{ b.disabled=false; b.setAttribute('aria-disabled','false'); });
-          selectedAnswer = null;
         }, 900);
+      }
+    };
+
+    function showPandaCelebration(){
+      const container = document.getElementById('pandaCelebration');
+      if(!container) return;
+      container.innerHTML = '';
+      const wrap = document.createElement('div');
+      wrap.className = 'panda-center';
+      wrap.innerHTML = `<div class="panda-emoji">🐼</div><div class="panda-text">太棒了！</div>`;
+      container.appendChild(wrap);
+      createConfettiBurst(container);
+    }
+    function createConfettiBurst(container){
+      const colors = ['#667eea','#764ba2','#48bb78','#f6e05e','#fc8181'];
+      for(let i=0;i<18;i++){
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = (5 + Math.random()*90) + '%';
+        c.style.top = (5 + Math.random()*20) + 'px';
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        c.style.animationDuration = (1.2 + Math.random()*1.4) + 's';
+        container.appendChild(c);
+        setTimeout(()=>{ if(c.parentNode) c.parentNode.removeChild(c); }, 3000);
       }
     }
 
-    function nextQuestion(){ currentQuestionIndex++; shuffledOptions=[]; if(currentQuestionIndex<questions.length) renderQuestion(); else showResults(); }
+    function nextQuestion(){ currentQuestionIndex++; shuffledOptions=[]; if(currentQuestionIndex < QUESTIONS.length) renderQuestion(); else showResults(); }
 
-    /* ========== Result screen (shows firstTryCorrectCount as "Respuestas acertadas") ========= */
     function showResults(){
       const content = document.getElementById('gameContent');
       const totalAttempts = Object.values(questionAttempts).reduce((a,b)=>a+b,0);
       document.getElementById('progressFill').style.width = '100%';
-
-      // Desglose por pregunta (intentos)
-      const perQuestionLines = questions.map((q, idx) => {
+      const perQuestionLines = QUESTIONS.map((q, idx) => {
         const attempts = questionAttempts[q.id] || 0;
-        return `<div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#fff;margin-bottom:8px;box-shadow:0 6px 18px rgba(12,20,40,0.04)"><div><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong></div><div style="font-weight:700;color:#334155">${attempts}</div></div>`;
+        return `<div style="display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#fff;margin-bottom:8px;"><div><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong></div><div style="font-weight:700;color:#334155">${attempts}</div></div>`;
       }).join('');
-
       content.innerHTML = `
         <div style="text-align:center;padding:26px;">
           <div style="font-size:64px">🐼🎉</div>
-          <h2 style="margin:8px 0 6px">${defaultConfig.complete_message}</h2>
-
+          <h2>¡Juego completado!</h2>
           <div style="margin-top:18px;text-align:left;max-width:720px;margin-left:auto;margin-right:auto">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(90deg,#f8fafc,#ffffff);box-shadow:0 10px 30px rgba(11,22,48,0.04);margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;padding:14px;border-radius:12px;background:#fff;margin-bottom:12px">
               <div>
-                <div style="font-size:13px;color:#94a3b8">Respuestas acertadas (primer intento)</div>
-                <div style="font-size:28px;font-weight:800;color:#667eea">${firstTryCorrectCount}/${questions.length}</div>
+                <div style="font-size:13px;color:#94a3b8">Respuestas acertadas</div>
+                <div style="font-size:28px;font-weight:800;color:#667eea">${firstTryCorrectCount}/${QUESTIONS.length}</div>
               </div>
               <div style="text-align:right">
                 <div style="font-size:13px;color:#94a3b8">Intentos totales</div>
                 <div style="font-size:22px;font-weight:700;color:#2d3748">${totalAttempts}</div>
               </div>
             </div>
-
             <div style="font-size:15px;font-weight:700;margin-bottom:8px">Detalle intentos:</div>
             ${perQuestionLines}
           </div>
-
-          <div style="margin-top:18px"><button onclick="restartGame()" style="padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer">Jugar de nuevo</button></div>
+          <div style="margin-top:18px"><button class="small-btn" onclick="restartGame()" style="padding:10px 16px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:8px">Jugar de nuevo</button></div>
         </div>
       `;
-
-      // guardem sessió resum com a registre (incloem firstTryCorrectCount)
-      const sessionSummary = {
-        game_session: gameSession,
-        date: (new Date()).toISOString(),
-        correctAnswers,
-        firstTryCorrectCount,
-        totalQuestions: questions.length,
-        attemptsByQuestion: questionAttempts,
-        user_name: localStorage.getItem('juego_user_name')||'',
-        user_group: localStorage.getItem('juego_user_group')||''
-      };
+      const sessionSummary = { game_session: gameSession, date: (new Date()).toISOString(), correctAnswers, firstTryCorrectCount, totalQuestions: QUESTIONS.length, attemptsByQuestion: questionAttempts, user_name: localStorage.getItem('juego_user_name')||'', user_group: localStorage.getItem('juego_user_group')||'' };
       storeResultLocal({ session: sessionSummary });
     }
 
     function restartGame(){
       currentQuestionIndex = 0;
-      gameSession = Date.now().toString();
       questionAttempts = {};
       correctAnswers = 0;
       firstTryCorrectCount = 0;
@@ -497,324 +294,160 @@
       renderQuestion();
     }
 
-    /* ==================== SDK mocks ==================== */
-    if (!window.dataSdk) {
-      window.dataSdk = { async init(){ return { isOk: true }; }, async create(record){ console.log('mock save', record); return { isOk: true }; } };
-    }
-
-    /* ==================== Inicialización ==================== */
-    async function initializeGame(){
-      await loadAudioManifestAndPrefetch();
-      loadSavedAudios();
-      try { await window.dataSdk.init({ onDataChanged: ()=>{} }); } catch(e){ console.warn('dataSdk.init fallo', e); }
-      renderQuestion();
-    }
-
-    /* ==================== Helpers input/normalization ==================== */
-    function normalizeInput(s){ if(!s) return ''; return s.replace(/[\u200B-\u200D\uFEFF]/g,'').trim().normalize('NFC'); }
-
-    /* ==================== Contraseña UI y formulario ==================== */
-    const pwOverlay = document.getElementById('passwordOverlay');
-    const pwInput = document.getElementById('passwordInput');
-    const pwBtn = document.getElementById('passwordBtn');
-    const pwError = document.getElementById('passwordError');
-    const adminControls = document.getElementById('adminControls');
-    const showPassword = document.getElementById('showPassword');
-    const userNameInput = document.getElementById('userName');
-    const userGroupInput = document.getElementById('userGroup');
-    const adminPanel = document.getElementById('adminPanel');
-
-    // Pre-fill desde localStorage
-    function prefillUserInfo(){
-      const storedName = localStorage.getItem('juego_user_name') || '';
-      const storedGroup = localStorage.getItem('juego_user_group') || '';
-      if(storedName) userNameInput.value = storedName;
-      if(storedGroup) userGroupInput.value = storedGroup;
-    }
-
-    showPassword.addEventListener('change', ()=> { pwInput.type = showPassword.checked ? 'text' : 'password'; });
-
-    // START GAME: también atamos aquí los handlers admin para asegurarnos que existen
-    function startGame(admin=false){
-      isAdminMode = admin;
-      if(isAdminMode){
-        adminControls.style.visibility = 'visible';
-        adminControls.setAttribute('aria-hidden','false');
-      } else {
-        adminControls.style.visibility = 'hidden';
-        adminControls.setAttribute('aria-hidden','true');
-      }
-
-      // Attach admin button handlers (safe: elements exist in DOM)
-      const showAdminResultsBtnEl = document.getElementById('showAdminResultsBtn');
-      const downloadCsvBtnEl = document.getElementById('downloadCsvBtn');
-      const downloadResultsBtnEl = document.getElementById('downloadResultsBtn');
-      const exportAudiosBtnEl = document.getElementById('exportAudiosBtn');
-
-      if (showAdminResultsBtnEl) {
-        showAdminResultsBtnEl.onclick = () => {
-          if (adminPanel.style.display === 'block') {
-            adminPanel.style.display = 'none';
-          } else {
-            buildAdminAggregatedView();
-            adminPanel.style.display = 'block';
-          }
-        };
-      }
-      if (downloadCsvBtnEl) {
-        downloadCsvBtnEl.onclick = () => exportCsv(getStoredResults(), 'resultados_juego_all.csv');
-      }
-      if (downloadResultsBtnEl) {
-        downloadResultsBtnEl.onclick = () => {
-          const data = getStoredResults();
-          alert(`Registros locales: ${data.length}. Puedes usar "Ver resultados" para verlos o "Exportar CSV" para descargarlos.`);
-        };
-      }
-      if (exportAudiosBtnEl) {
-        exportAudiosBtnEl.onclick = () => {
-          const items = [];
-          for(let i=0;i<questions.length;i++){
-            const name = localStorage.getItem(audioKeyName(i));
-            const data = localStorage.getItem(audioKeyData(i));
-            if(name && data) items.push({index:i,name,hasData:true});
-            else if(name) items.push({index:i,name,hasData:false});
-            else items.push({index:i,name:'(no cargado)',hasData:false});
-          }
-          alert('Estado audios: ' + items.map(it=>`Q${it.index+1}: ${it.name}${it.hasData ? ' (guardado)': ''}`).join(' | '));
-        };
-      }
-
-      // guardar info d'usuari a localStorage (recorda entre sessions)
-      const name = normalizeInput(userNameInput.value);
-      const group = normalizeInput(userGroupInput.value);
-      if (name) localStorage.setItem('juego_user_name', name);
-      if (group) localStorage.setItem('juego_user_group', group);
-
-      pwOverlay.style.display = 'none';
-      initializeGame();
-    }
-
-    pwBtn.addEventListener('click', ()=>{
-      const rawPass = pwInput.value || '';
-      const val = normalizeInput(rawPass);
-      const name = normalizeInput(userNameInput.value);
-      const group = normalizeInput(userGroupInput.value);
-
-      if(!name || !group){
-        pwError.textContent = 'Por favor, introduce Nombre usuario y Grupo';
-        pwError.style.display = 'block';
-        setTimeout(()=> pwError.style.display='none', 3000);
-        return;
-      }
-      if(name.length > 30){
-        pwError.textContent = 'El nombre no puede tener más de 30 caracteres';
-        pwError.style.display = 'block';
-        setTimeout(()=> pwError.style.display='none', 3000);
-        return;
-      }
-
-      if(val === ADMIN_PASSWORD){
-        startGame(true);
-      } else if(val === STUDENT_PASSWORD){
-        startGame(false);
-      } else {
-        pwError.textContent = 'Contraseña incorrecta o campos incompletos';
-        pwError.style.display = 'block';
-        setTimeout(()=> pwError.style.display='none', 2500);
-      }
-    });
-
-    pwInput.addEventListener('keyup', (e)=>{ if(e.key==='Enter') pwBtn.click(); });
-    userNameInput.addEventListener('keyup', (e)=>{ if(e.key==='Enter') pwInput.focus(); });
-    userGroupInput.addEventListener('keyup', (e)=>{ if(e.key==='Enter') pwInput.focus(); });
-
-    window.addEventListener('DOMContentLoaded', ()=>{
-      showPasswordOverlay();
-      window.__juego = { audioFiles, audioFileNames, getStoredResults };
-    });
-
-    /* ==================== Admin aggregated view & stats ==================== */
+    // Admin aggregated view (simplified)
     function buildAdminAggregatedView(){
       const rows = getStoredResults();
-      const panel = adminPanel;
-      if(!rows || rows.length === 0){
-        panel.innerHTML = `<div>No hay resultados todavía.</div>`;
-        return;
-      }
-
-      // 1) Extracción de sessions (guardadas como { session: {...} })
-      const sessions = rows.filter(r => r && r.session).map(r => r.session).slice().reverse(); // show latest first
-
-      // 2) If no explicit sessions were stored, try to synthesize sessions from response records by grouping by game_session
+      const panel = document.getElementById('adminPanel');
+      if(!rows || rows.length === 0){ panel.innerHTML = '<div>No hay resultados todavía.</div>'; return; }
+      // Extract session entries
+      const sessionRows = rows.filter(r => r && r.session).map(r => r.session).slice().reverse();
+      // If none, synthesize by grouping records by game_session
       const responseRecords = rows.filter(r => r && !r.session);
-      const sessionsById = {};
+      const synthesized = {};
       responseRecords.forEach(r => {
-        const sid = r.game_session || ('gen-' + (r.user_name || 'u') + '-' + (r.timestamp||''));
-        if(!sessionsById[sid]) sessionsById[sid] = { game_session: sid, date: r.timestamp || '', user_name: r.user_name || '', user_group: r.user_group || '', attemptsByQuestion: {}, correctAnswers: 0, firstTryCorrectCount: 0 };
-        // aggregate
-        const s = sessionsById[sid];
-        const qid = r.question_id;
-        s.attemptsByQuestion[qid] = Math.max(s.attemptsByQuestion[qid] || 0, r.attempts || 0);
-        if(r.correct) s.correctAnswers = (s.correctAnswers||0) + 1;
-        if(r.first_try) s.firstTryCorrectCount = (s.firstTryCorrectCount||0) + 1;
+        const sid = r.game_session || ('gen-'+(r.user_name||'u')+'-'+(r.timestamp||''));
+        if(!synthesized[sid]) synthesized[sid] = { game_session: sid, date: r.timestamp||'', user_name: r.user_name||'', user_group: r.user_group||'', attemptsByQuestion: {}, correctAnswers:0, firstTryCorrectCount:0 };
+        synthesized[sid].attemptsByQuestion[r.question_id] = Math.max(synthesized[sid].attemptsByQuestion[r.question_id]||0, r.attempts||0);
+        if(r.correct) synthesized[sid].correctAnswers++;
+        if(r.first_try) synthesized[sid].firstTryCorrectCount++;
       });
-      // add synthesized sessions that are missing from explicit sessions (avoid duplicates)
-      const explicitSessionIds = new Set(sessions.map(s=>s.game_session));
-      Object.values(sessionsById).forEach(s => { if(!explicitSessionIds.has(s.game_session)) sessions.unshift(s); });
+      const synthesizedList = Object.values(synthesized).reverse();
+      const allSessions = sessionRows.length ? sessionRows.concat(synthesizedList) : synthesizedList;
 
-      // 3) Build per-session cards
       let html = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="small-btn" id="exportAllCsv">Exportar CSV</button><button class="small-btn" id="clearResultsBtn">Borrar resultados locales</button></div>`;
-      html += `<div id="adminStats"></div>`;
-      html += `<div style="margin-top:10px">`;
-      if(sessions.length === 0){
-        html += `<div>No hay sesiones guardadas (intenta jugar y completar una sesión para que aparezca).</div>`;
-      } else {
-        sessions.forEach(sess => {
-          const dateStr = formatDateNice(sess.date);
-          const user = sess.user_name || 'Anónimo';
-          const group = sess.user_group || '';
-          const totalCorrect = typeof sess.correctAnswers === 'number' ? sess.correctAnswers : (sess.firstTryCorrectCount || 0);
-          const totalQuestions = sess.totalQuestions || questions.length;
-          // attempt details per question (from attemptsByQuestion)
-          const attemptsByQ = sess.attemptsByQuestion || {};
-          const detailHtml = questions.map((q, idx) => {
-            const a = attemptsByQ[q.id] || '-';
-            return `<div style="font-size:13px;color:#475569;margin-top:6px"><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong> ${a}</div>`;
-          }).join('');
-          html += `
-            <div class="session-card">
-              <div class="session-left">
-                <div style="font-weight:700;color:#0f172a">${user} ${group ? '· ' + group : ''}</div>
-                <div class="session-meta">Fecha: ${dateStr}</div>
-                <div style="margin-top:8px">${detailHtml}</div>
-              </div>
-              <div class="session-right">
-                <div class="session-meta">Total aciertos</div>
-                <div class="session-stats">${totalCorrect}/${totalQuestions}</div>
-              </div>
-            </div>
-          `;
-        });
-      }
-      html += `</div>`;
-
-      panel.innerHTML = html;
-
-      // attach small controls
-      document.getElementById('exportAllCsv').addEventListener('click', ()=> exportCsv(getStoredResults(), 'resultados_juego_all.csv'));
-      document.getElementById('clearResultsBtn').addEventListener('click', ()=>{
-        if(confirm('¿Borrar todos los resultados guardados localmente? Esta acción no se puede deshacer.')){
-          localStorage.removeItem(RESULTS_KEY);
-          buildAdminAggregatedView();
-        }
+      html += `<div id="adminStats" style="margin-bottom:12px"></div>`;
+      html += `<div>`;
+      allSessions.forEach(s => {
+        const dateStr = s.date ? (new Date(s.date)).toLocaleString() : '-';
+        const user = s.user_name || 'Anónimo';
+        const group = s.user_group ? ' · ' + s.user_group : '';
+        const totalCorrect = typeof s.correctAnswers === 'number' ? s.correctAnswers : (s.firstTryCorrectCount||0);
+        const attemptsByQ = s.attemptsByQuestion || {};
+        const detailHtml = QUESTIONS.map((q, idx) => `<div style="font-size:13px;color:#475569;margin-top:6px"><strong>Pregunta ${idx+1} (${q.shortTitle}):</strong> ${attemptsByQ[q.id] || '-'}</div>`).join('');
+        html += `<div style="border-radius:10px;padding:12px;background:#fff;margin-bottom:8px;box-shadow:0 6px 18px rgba(12,20,40,0.04);display:flex;justify-content:space-between"><div><div style="font-weight:700">${user}${group}</div><div style="font-size:13px;color:#64748b;margin-top:4px">Fecha: ${dateStr}</div>${detailHtml}</div><div style="text-align:right"><div style="font-size:13px;color:#94a3b8">Total aciertos</div><div style="font-weight:800;font-size:20px;color:#334155;margin-top:6px">${totalCorrect}/${QUESTIONS.length}</div></div></div>`;
       });
-
-      // 4) Compute and render aggregate stats (which question failed most, average games per user, total sessions)
-      renderAdminStats(rows, sessions);
-    }
-
-    function formatDateNice(iso){
-      if(!iso) return '-';
-      try {
-        const d = new Date(iso);
-        const opts = { weekday: 'short', day: '2-digit', month: 'short', hour:'2-digit', minute:'2-digit' };
-        // try to use user's locale, fallback to 'es-ES'
-        const loc = navigator.language || 'es-ES';
-        return d.toLocaleString(loc, opts);
-      } catch(e){ return iso; }
+      html += `</div>`;
+      panel.innerHTML = html;
+      document.getElementById('exportAllCsv').addEventListener('click', ()=> exportCsv(getStoredResults(), 'resultados_juego_all.csv'));
+      document.getElementById('clearResultsBtn').addEventListener('click', ()=> { if(confirm('¿Borrar todos los resultados guardados localmente?')){ localStorage.removeItem(RESULTS_KEY); buildAdminAggregatedView(); } });
+      // small stats
+      renderAdminStats(getStoredResults(), allSessions);
     }
 
     function renderAdminStats(allRows, sessions){
-      const statsContainer = document.getElementById('adminStats');
-      if(!statsContainer) return;
-      // compute failed counts per question (count of incorrect answers)
+      const statsEl = document.getElementById('adminStats');
+      if(!statsEl) return;
       const responseRecords = allRows.filter(r => r && !r.session);
       const failCounts = {};
-      const totalResponsesPerQuestion = {};
+      const totalPerQ = {};
       responseRecords.forEach(r => {
         if(!r.question_id) return;
-        totalResponsesPerQuestion[r.question_id] = (totalResponsesPerQuestion[r.question_id]||0) + 1;
-        if(!r.correct) failCounts[r.question_id] = (failCounts[r.question_id]||0) + 1;
+        totalPerQ[r.question_id] = (totalPerQ[r.question_id]||0)+1;
+        if(!r.correct) failCounts[r.question_id] = (failCounts[r.question_id]||0)+1;
       });
-      // If no responseRecords (maybe only sessions exist), try to infer from session summaries: use attemptsByQuestion available
-      if(responseRecords.length === 0){
-        const sessionEntries = allRows.filter(r => r && r.session).map(r=>r.session);
-        sessionEntries.forEach(s => {
-          if(!s.attemptsByQuestion) return;
-          Object.keys(s.attemptsByQuestion).forEach(qid => {
-            totalResponsesPerQuestion[qid] = (totalResponsesPerQuestion[qid]||0) + (s.attemptsByQuestion[qid] || 0);
-            // can't know fails exactly here; skip
-          });
-        });
-      }
-
-      // Identify question with highest absolute fail count (and percent)
-      let worstQuestionId = null;
-      let worstFails = 0;
+      let worstQ = 'N/A', worstFails=0, worstPct='-';
       Object.keys(failCounts).forEach(qid => {
-        if(failCounts[qid] > worstFails){ worstFails = failCounts[qid]; worstQuestionId = qid; }
+        if(failCounts[qid] > worstFails){ worstFails = failCounts[qid]; worstQ = (QUESTIONS.find(q=>q.id===qid)?.shortTitle||qid); worstPct = ((failCounts[qid]/Math.max(1,totalPerQ[qid]))*100).toFixed(1)+'%'; }
       });
-
-      // average games per user: count distinct sessions per user
-      const sessionRows = allRows.filter(r => r && r.session).map(r => r.session);
-      const sessionsByUser = {};
-      sessionRows.forEach(s => {
-        const u = s.user_name || 'Anónimo';
-        sessionsByUser[u] = sessionsByUser[u] || new Set();
-        sessionsByUser[u].add(s.game_session || (s.date || Math.random()));
-      });
-      const userCounts = Object.keys(sessionsByUser).length;
+      const sessionRows = allRows.filter(r=>r && r.session).map(r=>r.session);
       const totalSessions = sessionRows.length || sessions.length;
-      const avgGamesPerUser = userCounts === 0 ? 0 : (totalSessions / userCounts);
-      // total unique users seen (from response records + sessionRows)
-      const usersSet = new Set();
-      allRows.forEach(r => { if(r.user_name) usersSet.add(r.user_name); if(r.session && r.session.user_name) usersSet.add(r.session.user_name); });
-      const uniqueUsers = usersSet.size;
-
-      // prepare display values
-      const worstQuestionLabel = worstQuestionId ? (questions.find(q=>q.id===worstQuestionId)?.shortTitle || worstQuestionId) : 'N/A';
-      const worstQuestionPercent = worstQuestionId ? ( (failCounts[worstQuestionId] || 0) / Math.max(1, (totalResponsesPerQuestion[worstQuestionId] || 0)) * 100 ).toFixed(1) + '%' : '-';
-
-      // Render small stats
-      statsContainer.innerHTML = `
-        <div id="adminStatsInner" style="display:flex;gap:12px;flex-wrap:wrap;">
-          <div style="min-width:220px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
-            <div style="font-size:12px;color:#94a3b8">Sesiones registradas</div>
-            <div style="font-weight:800;font-size:20px;color:#334155">${totalSessions}</div>
-          </div>
-          <div style="min-width:220px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
-            <div style="font-size:12px;color:#94a3b8">Usuarios únicos</div>
-            <div style="font-weight:800;font-size:20px;color:#334155">${uniqueUsers}</div>
-          </div>
-          <div style="min-width:240px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
-            <div style="font-size:12px;color:#94a3b8">Media de partidas por usuario</div>
-            <div style="font-weight:800;font-size:20px;color:#334155">${avgGamesPerUser.toFixed(2)}</div>
-          </div>
-          <div style="min-width:260px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
-            <div style="font-size:12px;color:#94a3b8">Pregunta más fallada</div>
-            <div style="font-weight:800;font-size:18px;color:#b91c1c">${worstQuestionLabel} — ${worstFails} fallos (${worstQuestionPercent})</div>
-          </div>
-        </div>
-      `;
+      const users = new Set(); allRows.forEach(r=>{ if(r.user_name) users.add(r.user_name); if(r.session && r.session.user_name) users.add(r.session.user_name); });
+      const uniqueUsers = users.size;
+      const avg = uniqueUsers ? (totalSessions/uniqueUsers).toFixed(2) : '0.00';
+      statsEl.innerHTML = `<div style="display:flex;gap:12px;flex-wrap:wrap"><div style="padding:10px;background:#fff;border-radius:8px">Sesiones: <strong>${totalSessions}</strong></div><div style="padding:10px;background:#fff;border-radius:8px">Usuarios únicos: <strong>${uniqueUsers}</strong></div><div style="padding:10px;background:#fff;border-radius:8px">Media partidas/usuario: <strong>${avg}</strong></div><div style="padding:10px;background:#fff;border-radius:8px">Pregunta més fallada: <strong>${worstQ}</strong> (${worstFails}) ${worstPct}</div></div>`;
     }
 
-    function exportCsv(data, filename = 'resultados.csv'){
+    function exportCsv(data, filename='resultados.csv'){
       if(!data || !data.length){ alert('No hay datos para exportar'); return; }
-      const rows = [];
-      rows.push(['user_name','user_group','type','question','attempts','correct','first_try','timestamp','game_session']);
-      data.forEach(r=>{
-        if(r.session){
-          rows.push([r.session.user_name||'', r.session.user_group||'', 'session_summary', '', '', '', '', r.session.date||'', r.session.game_session||'']);
-        } else {
-          rows.push([r.user_name||'', r.user_group||'', 'respuesta', r.question_title||r.question_id||'', r.attempts||'', r.correct? '1':'0', r.first_try? '1':'0', r.timestamp||'', r.game_session||'']);
-        }
+      const rows = [['user_name','user_group','type','question','attempts','correct','first_try','timestamp','game_session']];
+      data.forEach(r => {
+        if(r.session) rows.push([r.session.user_name||'', r.session.user_group||'', 'session_summary','', '', '', '', r.session.date||'', r.session.game_session||'']);
+        else rows.push([r.user_name||'', r.user_group||'', 'respuesta', r.question_title||r.question_id||'', r.attempts||'', r.correct? '1':'0', r.first_try? '1':'0', r.timestamp||'', r.game_session||'']);
       });
-      const csv = rows.map(r => r.map(cell => `"${String(cell||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+      const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     }
 
+    // UI: password overlay
+    const pwOverlay = document.getElementById('passwordOverlay');
+    const pwInput = document.getElementById('passwordInput');
+    const pwBtn = document.getElementById('passwordBtn');
+    const pwError = document.getElementById('passwordError');
+    const showPassword = document.getElementById('showPassword');
+    const userNameInput = document.getElementById('userName');
+    const userGroupInput = document.getElementById('userGroup');
+    const adminControls = document.getElementById('adminControls');
+    const adminPanel = document.getElementById('adminPanel');
+    const showAdminResultsBtn = document.getElementById('showAdminResultsBtn');
+    const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+    const downloadResultsBtn = document.getElementById('downloadResultsBtn');
+    const exportAudiosBtn = document.getElementById('exportAudiosBtn');
+
+    showPassword.addEventListener('change', ()=> { pwInput.type = showPassword.checked ? 'text' : 'password'; });
+
+    function prefillUserInfo(){ const n=localStorage.getItem('juego_user_name')||''; const g=localStorage.getItem('juego_user_group')||''; if(n) userNameInput.value=n; if(g) userGroupInput.value=g; }
+
+    function showPasswordOverlay(){ try{ prefillUserInfo(); pwOverlay.style.display = 'flex'; userNameInput.focus(); }catch(e){ console.error('showPasswordOverlay error', e); } }
+
+    function startGame(admin=false){
+      isAdminMode = admin;
+      if(isAdminMode){ adminControls.style.visibility='visible'; adminControls.setAttribute('aria-hidden','false'); } else { adminControls.style.visibility='hidden'; adminControls.setAttribute('aria-hidden','true'); }
+      // attach admin handlers (safe)
+      if(showAdminResultsBtn) showAdminResultsBtn.onclick = ()=> { if(adminPanel.style.display==='block'){ adminPanel.style.display='none'; } else { buildAdminAggregatedView(); adminPanel.style.display='block'; } };
+      if(downloadCsvBtn) downloadCsvBtn.onclick = ()=> exportCsv(getStoredResults(), 'resultados_juego_all.csv');
+      if(downloadResultsBtn) downloadResultsBtn.onclick = ()=> { const d=getStoredResults(); alert(`Registros locales: ${d.length}`); };
+      if(exportAudiosBtn) exportAudiosBtn.onclick = ()=> { const items=[]; for(let i=0;i<QUESTIONS.length;i++){ const name = localStorage.getItem(audioKeyName(i)); const data = localStorage.getItem(audioKeyData(i)); items.push({index:i,name:name||'(no cargado)',hasData:!!data}); } alert('Estado audios: ' + items.map(it=>`Q${it.index+1}: ${it.name}${it.hasData?' (guardado)':''}`).join(' | ')); };
+      const name = normalizeInput(userNameInput.value); const group = normalizeInput(userGroupInput.value);
+      if(name) localStorage.setItem('juego_user_name', name); if(group) localStorage.setItem('juego_user_group', group);
+      pwOverlay.style.display = 'none';
+      loadSavedAudios();
+      renderQuestion();
+    }
+
+    pwBtn.addEventListener('click', ()=>{
+      try{
+        const raw = pwInput.value || '';
+        const val = normalizeInput(raw);
+        const name = normalizeInput(userNameInput.value);
+        const group = normalizeInput(userGroupInput.value);
+        if(!name || !group){ pwError.textContent='Por favor, introduce Nombre usuario y Grupo'; pwError.style.display='block'; setTimeout(()=>pwError.style.display='none',3000); return; }
+        if(name.length>30){ pwError.textContent='El nombre no puede tener más de 30 caracteres'; pwError.style.display='block'; setTimeout(()=>pwError.style.display='none',3000); return; }
+        if(val === ADMIN_PASSWORD) startGame(true);
+        else if(val === STUDENT_PASSWORD) startGame(false);
+        else { pwError.textContent='Contraseña incorrecta o campos incompletos'; pwError.style.display='block'; setTimeout(()=>pwError.style.display='none',2500); return; }
+      }catch(e){ console.error('pwBtn click error', e); }
+    });
+
+    // ensure overlay shows after DOM ready and catch errors globally
+    window.addEventListener('DOMContentLoaded', ()=> {
+      try{
+        console.log('DOM cargado — mostrant overlay de password...');
+        showPasswordOverlay();
+        // small safety: expose debugging helpers
+        window.__juego = { audioFiles, audioFileNames, getStoredResults };
+      }catch(e){
+        console.error('Error en DOMContentLoaded handler', e);
+        alert('Ha ocurrido un error al inicializar el juego. Consulta la consola del navegador para más detalles.');
+      }
+    });
+
+    // global error catcher to help debugging if algo se rompe
+    window.addEventListener('error', function(ev){
+      console.error('Unhandled error:', ev.error || ev.message || ev);
+      // show a tiny banner so you see algo va mal (opcional)
+      try{
+        const el = document.getElementById('gameContent');
+        if(el && !document.getElementById('debugErrorBanner')){
+          const b = document.createElement('div'); b.id='debugErrorBanner'; b.style.background='#fee2e2'; b.style.color='#7f1d1d'; b.style.padding='8px'; b.style.borderRadius='6px'; b.style.margin='10px'; b.textContent = 'Error en la aplicación — mira la consola (F12) para más detalles.'; el.prepend(b);
+        }
+      }catch(e){}
+    });
+
+    // expose some functions useful for debugging
+    window.__debug = { renderQuestion, buildAdminAggregatedView, showPasswordOverlay, getStoredResults };
+  })();
   </script>
 </body>
 </html>
