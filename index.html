@@ -909,69 +909,70 @@ function buildAdminAggregatedView(){
 }
 
 // reemplaça renderAdminStats per:
-// Substitueix renderAdminStats per aquesta versió (suma tots els intents per pregunta)
 function renderAdminStats(allRows, combinedSessions){
   const statsContainer = document.getElementById('adminStats');
   if(!statsContainer) return;
-
-  // recollir tots els registres de resposta (no summaries)
   const responseRecords = allRows.filter(r => r && !r.session);
   const explicitSessions = allRows.filter(r => r && r.session).map(r => r.session);
 
-  // 1) Sumem tots els intents per pregunta: usem tant responseRecords (r.attempts)
-  //    com també els attemptsByQuestion de sessions explícites (si existeixen)
-  const totalAttemptsPerQuestion = {};    // qid -> sum attempts
-  responseRecords.forEach(r => {
-    if (!r.question_id) return;
-    const q = r.question_id;
-    const v = Number(r.attempts) || 0;
-    totalAttemptsPerQuestion[q] = (totalAttemptsPerQuestion[q] || 0) + v;
-  });
+  // 1) Construir sessions sintetitzades com a map (id -> attemptsByQuestion)
+  const sessionsMap = {};
+
+  // incloure sessions explícites
   explicitSessions.forEach(s => {
-    if (!s.attemptsByQuestion) return;
-    Object.keys(s.attemptsByQuestion).forEach(qid => {
-      const v = Number(s.attemptsByQuestion[qid]) || 0;
-      totalAttemptsPerQuestion[qid] = (totalAttemptsPerQuestion[qid] || 0) + v;
-    });
+    const sid = s.game_session || ('sess-' + (s.user_name||'') + '-' + (s.date||Math.random()));
+    sessionsMap[sid] = { id: sid, date: s.date, user_name: s.user_name, user_group: s.user_group, attemptsByQuestion: s.attemptsByQuestion || {}, firstTryCorrectCount: s.firstTryCorrectCount || 0 };
   });
 
-  // 2) Pregunta més fallada: la qid amb màxima suma
-  let worstQid = null;
-  let worstSum = 0;
-  Object.keys(totalAttemptsPerQuestion).forEach(qid => {
-    if (totalAttemptsPerQuestion[qid] > worstSum) {
-      worstSum = totalAttemptsPerQuestion[qid];
-      worstQid = qid;
+  // agregar respostes individuals (mantenim el MÀX d'intents fallats per pregunta dins de cada sessió)
+  responseRecords.forEach(r => {
+    const sid = r.game_session || ('gen-' + (r.user_name || 'u') + '-' + (r.timestamp||''));
+    if(!sessionsMap[sid]) sessionsMap[sid] = { id: sid, date: r.timestamp || '', user_name: r.user_name || '', user_group: r.user_group || '', attemptsByQuestion: {}, firstTryCorrectCount:0 };
+    const s = sessionsMap[sid];
+    s.attemptsByQuestion[r.question_id] = Math.max(s.attemptsByQuestion[r.question_id] || 0, r.attempts || 0);
+    if(r.first_try) s.firstTryCorrectCount = (s.firstTryCorrectCount || 0) + 1;
+    if(!s.date || (r.timestamp && new Date(r.timestamp) < new Date(s.date))) s.date = r.timestamp;
+  });
+
+  // convertir map a array
+  const sessions = Object.keys(sessionsMap).map(k=>sessionsMap[k]);
+
+  // 2) Per cada sessió, identificar la pregunta AMB MÉS INTENTS dins d'aquesta sessió
+  const worstQuestionAccumulator = {}; // qid -> suma dels intents quan era la màxima dins la sessió
+  sessions.forEach(sess => {
+    const attemptsByQ = sess.attemptsByQuestion || {};
+    // trobar pregunta amb màxim intents; en cas d'empat, triem la de menor índex (ordre questions[])
+    let maxQid = null;
+    let maxAttempts = -1;
+    for (let i = 0; i < questions.length; i++) {
+      const qid = questions[i].id;
+      const v = attemptsByQ[qid] || 0;
+      if (v > maxAttempts) { maxAttempts = v; maxQid = qid; }
+    }
+    if (maxQid && maxAttempts > 0) {
+      worstQuestionAccumulator[maxQid] = (worstQuestionAccumulator[maxQid] || 0) + maxAttempts;
     }
   });
 
-  // 3) Pregunta més acertada: sumar first_try per pregunta (només de responseRecords)
+  // Comptar first_try globals per pregunta (pregunta més acertada)
   const firstTryCorrectsPerQuestion = {};
   responseRecords.forEach(r => {
     if(!r.question_id) return;
     if(r.first_try) firstTryCorrectsPerQuestion[r.question_id] = (firstTryCorrectsPerQuestion[r.question_id] || 0) + 1;
   });
+
+  // identificar worst i best
+  let worstQid = null; let worstSum = 0;
+  Object.keys(worstQuestionAccumulator).forEach(qid => {
+    if (worstQuestionAccumulator[qid] > worstSum) { worstSum = worstQuestionAccumulator[qid]; worstQid = qid; }
+  });
+
   let bestQid = null; let bestSum = 0;
   Object.keys(firstTryCorrectsPerQuestion).forEach(qid => {
     if (firstTryCorrectsPerQuestion[qid] > bestSum) { bestSum = firstTryCorrectsPerQuestion[qid]; bestQid = qid; }
   });
 
-  // 4) Stats de sessions/usuari (com abans)
-  // Construïm sessions a partir de sessions explícites i sessions sintetitzades
-  const sessionsMap = {};
-  explicitSessions.forEach(s => {
-    const sid = s.game_session || ('sess-' + (s.user_name||'') + '-' + (s.date||Math.random()));
-    sessionsMap[sid] = { id: sid, date: s.date, user_name: s.user_name, user_group: s.user_group, attemptsByQuestion: s.attemptsByQuestion || {} };
-  });
-  // també considerar respostes per comptar sessions totals
-  responseRecords.forEach(r => {
-    const sid = r.game_session || ('gen-' + (r.user_name || 'u') + '-' + (r.timestamp||''));
-    if(!sessionsMap[sid]) sessionsMap[sid] = { id: sid, date: r.timestamp || '', user_name: r.user_name || '', user_group: r.user_group || '', attemptsByQuestion: {} };
-    // keep max per pregunta (no necessari per aquest càlcul, però útil mostrar)
-    sessionsMap[sid].attemptsByQuestion[r.question_id] = Math.max(sessionsMap[sid].attemptsByQuestion[r.question_id]||0, Number(r.attempts)||0);
-  });
-
-  const sessions = Object.values(sessionsMap);
+  // sessionsCount i mitjana per usuari
   const sessionsCount = sessions.length;
   const sessionsByUser = {};
   sessions.forEach(s => {
@@ -1012,7 +1013,6 @@ function renderAdminStats(allRows, combinedSessions){
     </div>
   `;
 }
-
 
   html += `</div>`;
   panel.innerHTML = html;
