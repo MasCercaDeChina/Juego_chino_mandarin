@@ -920,30 +920,45 @@
       const responseRecords = allRows.filter(r => r && !r.session);
       const explicitSessions = allRows.filter(r => r && r.session).map(r => r.session);
 
-     // ---- reemplaçar per aquest bloc ----
+// ----------------- Reemplaça per aquest bloc -----------------
 const totalAttemptsPerQuestion = {};
 
-// 1) sumar intents des de responseRecords (respostes individuals)
-// només comptem intents si attempts > 1 (les que són igual a 1 s'ignoren)
+// Comptem només els errors (attempts - 1) per cada pregunta.
+// Ignorem intents == 1 (no hi ha error) i evitem doble comptatge de sessions.
 responseRecords.forEach(r => {
-  if (!r.question_id) return;
-  const a = Number(r.attempts || 0);
-  if (a > 1) {
-    totalAttemptsPerQuestion[r.question_id] = (totalAttemptsPerQuestion[r.question_id] || 0) + a;
+  if (!r || !r.question_id) return;
+  const attemptsNum = Number(r.attempts || 0);
+  if (attemptsNum > 1) {
+    totalAttemptsPerQuestion[r.question_id] =
+      (totalAttemptsPerQuestion[r.question_id] || 0) + (attemptsNum - 1);
   }
 });
 
-// 2) sumar intents provinents de sessions explícites (si existeixen)
-// les sessions explícites a 'explicitSessions' poden tenir attemptsByQuestion
-explicitSessions.forEach(s => {
-  if (!s.attemptsByQuestion) return;
-  Object.keys(s.attemptsByQuestion).forEach(qid => {
-    const a = Number(s.attemptsByQuestion[qid] || 0);
-    if (a > 1) {
-      totalAttemptsPerQuestion[qid] = (totalAttemptsPerQuestion[qid] || 0) + a;
-    }
+// Si no hi ha responseRecords (per compatibilitat amb versions que només usen sessions):
+if (Object.keys(totalAttemptsPerQuestion).length === 0 && explicitSessions.length > 0) {
+  explicitSessions.forEach(s => {
+    if (!s.attemptsByQuestion) return;
+    Object.keys(s.attemptsByQuestion).forEach(qid => {
+      const a = Number(s.attemptsByQuestion[qid] || 0);
+      if (a > 1) {
+        totalAttemptsPerQuestion[qid] =
+          (totalAttemptsPerQuestion[qid] || 0) + (a - 1);
+      }
+    });
   });
+}
+
+// Determinem la pregunta amb més errors totals
+let worstQid = null;
+let worstAttempts = 0;
+Object.keys(totalAttemptsPerQuestion).forEach(qid => {
+  const total = totalAttemptsPerQuestion[qid] || 0;
+  if (total > worstAttempts) {
+    worstAttempts = total;
+    worstQid = qid;
+  }
 });
+// ----------------- fi reemplaçament -----------------
 
 // 3) determinar la pregunta amb més intents després del filtre
 let worstQid = null;
