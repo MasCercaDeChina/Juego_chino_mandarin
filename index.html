@@ -185,13 +185,12 @@
   <script>
   (function(){
     'use strict';
-    console.log('Juego script inicializado (corregido)');
+    console.log('Juego script inicializado (corregit: compta errors)');
 
     /* ========== CONFIG ======== */
     const STUDENT_PASSWORD = "PANDARIN25".normalize('NFC'); // SIN ACENTO
     const ADMIN_PASSWORD   = "XUXITO25".normalize('NFC');
     const GAME_AUDIO_MANIFEST_URL = "audio_manifest.json"; // si no existeix, no passa res
-
 
     /* ========== PREGUNTAS ========== */
     const questions = [
@@ -438,7 +437,7 @@
        Replacements: renderQuestion + renderOptionsGrid
        (sin handlers inline — listeners se asignan aquí)
        =========================== */
-    // Exponer handleAudioUpload (por si queda algun handler inline o para pruebas)
+    // Exponer handleAudioUpload (por si queda algun handler inline o para proves)
     function handleAudioUpload(questionIndex) {
       const fileInput = document.getElementById(`audioFile${questionIndex}`);
       if (!fileInput) return;
@@ -464,7 +463,7 @@
         try { reader.readAsDataURL(file); } catch(e) { console.warn('No se pudo leer el archivo para guardarlo', e); alert('No se pudo guardar el audio.'); }
       }
     }
-    // Exponer globalmente
+    // Exponer globalment
     window.handleAudioUpload = handleAudioUpload;
 
     function renderOptionsGrid(){
@@ -848,7 +847,7 @@
         return;
       }
 
-      // separar sesiones explícitas i respostes
+      // separar sessions explícitas i respostes
       const explicitSessions = rows.filter(r => r && r.session).map(r => r.session).slice().reverse();
       const responseRecords = rows.filter(r => r && !r.session);
 
@@ -920,59 +919,51 @@
       const responseRecords = allRows.filter(r => r && !r.session);
       const explicitSessions = allRows.filter(r => r && r.session).map(r => r.session);
 
-// ----------------- Reemplaça per aquest bloc -----------------
-const totalAttemptsPerQuestion = {};
+      // -----------------------
+      // Comptar només els ERRORS totals (attempts - 1), evitant doble comptatge
+      // -----------------------
+      const totalAttemptsPerQuestion = {};
 
-// Comptem només els errors (attempts - 1) per cada pregunta.
-// Ignorem intents == 1 (no hi ha error) i evitem doble comptatge de sessions.
-responseRecords.forEach(r => {
-  if (!r || !r.question_id) return;
-  const attemptsNum = Number(r.attempts || 0);
-  if (attemptsNum > 1) {
-    totalAttemptsPerQuestion[r.question_id] =
-      (totalAttemptsPerQuestion[r.question_id] || 0) + (attemptsNum - 1);
-  }
-});
+      // Comptem només des de responseRecords (respostes individuals).
+      // Ignorem intents == 1 (no hi ha error) i evitem doble comptatge de sessions.
+      responseRecords.forEach(r => {
+        if (!r || !r.question_id) return;
+        const attemptsNum = Number(r.attempts || 0);
+        if (attemptsNum > 1) {
+          totalAttemptsPerQuestion[r.question_id] =
+            (totalAttemptsPerQuestion[r.question_id] || 0) + (attemptsNum - 1); // sumar només errors
+        }
+      });
 
-// Si no hi ha responseRecords (per compatibilitat amb versions que només usen sessions):
-if (Object.keys(totalAttemptsPerQuestion).length === 0 && explicitSessions.length > 0) {
-  explicitSessions.forEach(s => {
-    if (!s.attemptsByQuestion) return;
-    Object.keys(s.attemptsByQuestion).forEach(qid => {
-      const a = Number(s.attemptsByQuestion[qid] || 0);
-      if (a > 1) {
-        totalAttemptsPerQuestion[qid] =
-          (totalAttemptsPerQuestion[qid] || 0) + (a - 1);
+      // Si no hi ha responseRecords (per compatibilitat amb versions que només usen sessions),
+      // caiguem enrere a usar explicitSessions (cada sessió porta attemptsByQuestion)
+      if (Object.keys(totalAttemptsPerQuestion).length === 0 && explicitSessions.length > 0) {
+        explicitSessions.forEach(s => {
+          if (!s.attemptsByQuestion) return;
+          Object.keys(s.attemptsByQuestion).forEach(qid => {
+            const a = Number(s.attemptsByQuestion[qid] || 0);
+            if (a > 1) {
+              totalAttemptsPerQuestion[qid] =
+                (totalAttemptsPerQuestion[qid] || 0) + (a - 1);
+            }
+          });
+        });
       }
-    });
-  });
-}
 
-// Determinem la pregunta amb més errors totals
-let worstQid = null;
-let worstAttempts = 0;
-Object.keys(totalAttemptsPerQuestion).forEach(qid => {
-  const total = totalAttemptsPerQuestion[qid] || 0;
-  if (total > worstAttempts) {
-    worstAttempts = total;
-    worstQid = qid;
-  }
-});
-// ----------------- fi reemplaçament -----------------
+      // Determinem la pregunta amb més errors totals
+      let worstQid = null;
+      let worstAttempts = 0;
+      Object.keys(totalAttemptsPerQuestion).forEach(qid => {
+        const total = totalAttemptsPerQuestion[qid] || 0;
+        if (total > worstAttempts) {
+          worstAttempts = total;
+          worstQid = qid;
+        }
+      });
 
-// 3) determinar la pregunta amb més intents després del filtre
-let worstQid = null;
-let worstAttempts = 0;
-Object.keys(totalAttemptsPerQuestion).forEach(qid => {
-  const total = totalAttemptsPerQuestion[qid];
-  if (total > worstAttempts) {
-    worstAttempts = total;
-    worstQid = qid;
-  }
-});
-// ---- fi reemplaçament ----
-
-
+      // -----------------------
+      // Ara calculem la "pregunta més encertada (1r intent)" com abans
+      // -----------------------
       const firstTryCorrectsPerQuestion = {};
       responseRecords.forEach(r => {
         if(!r.question_id) return;
@@ -983,6 +974,7 @@ Object.keys(totalAttemptsPerQuestion).forEach(qid => {
         if (firstTryCorrectsPerQuestion[qid] > bestCount) { bestCount = firstTryCorrectsPerQuestion[qid]; bestQid = qid; }
       });
 
+      // sessions count and avg per user (misma lògica que abans)
       const sessionsCount = explicitSessions.length || combinedSessions.length;
       const sessionsByUser = {};
       explicitSessions.forEach(s => {
@@ -1000,7 +992,7 @@ Object.keys(totalAttemptsPerQuestion).forEach(qid => {
 
       const worstLabel = worstQid ? (questions.find(q=>q.id===worstQid)?.shortTitle || worstQid) : 'N/A';
       const bestLabel = bestQid ? (questions.find(q=>q.id===bestQid)?.shortTitle || bestQid) : 'N/A';
-      const worstPct = worstQid ? `${worstAttempts} intentos` : '-';
+      const worstLabelDisplay = worstAttempts ? `${worstAttempts} errores` : '-';
       const bestCountDisplay = bestQid ? `${bestCount} aciertos (1.º intento)` : '-';
 
       statsContainer.innerHTML = `
@@ -1019,7 +1011,7 @@ Object.keys(totalAttemptsPerQuestion).forEach(qid => {
           </div>
           <div style="min-width:260px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
             <div style="font-size:12px;color:#94a3b8">Pregunta más fallada</div>
-            <div style="font-weight:800;font-size:18px;color:#b91c1c">${worstLabel} — ${worstPct}</div>
+            <div style="font-weight:800;font-size:18px;color:#b91c1c">${worstLabel} — ${worstLabelDisplay}</div>
           </div>
           <div style="min-width:260px;padding:12px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(12,20,40,0.04)">
             <div style="font-size:12px;color:#94a3b8">Pregunta más acertada</div>
@@ -1071,7 +1063,6 @@ Object.keys(totalAttemptsPerQuestion).forEach(qid => {
     window.buildAdminAggregatedView = buildAdminAggregatedView;
     window.getStoredResults = getStoredResults;
     window.restartGame = window.restartGame;
-    // __juego ya s'ha exposat a DOMContentLoaded
 
   })();
   </script>
