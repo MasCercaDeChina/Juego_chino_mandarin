@@ -1,14 +1,15 @@
+// audio_manifest.json
 [
   {
-    "name": "T1_J_Q_X",
-    "url": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/Audio%20T1%20J-Q-X.m4a"
-  },
-  {
     "name": "T1_Yi",
-    "url": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/Audio%20T1.%20Yi.m4a"
+    "url": "https://mascercadechina.github.io/Juego_chino_mandarin/Audio_T1_Yi.m4a"
   },
   {
     "name": "Yi_jq",
-    "url": "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/Audio%20T2.%20Yi+jq.m4a"
+    "url": "https://mascercadechina.github.io/Juego_chino_mandarin/Audio_T2_Yi_jq.m4a"
+  },
+  {
+    "name": "T1_J_Q_X",
+    "url": "https://mascercadechina.github.io/Juego_chino_mandarin/Audio_T1_J_Q_X.m4a"
   }
 ]
