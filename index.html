@@ -185,12 +185,12 @@
   <script>
   (function(){
     'use strict';
-    console.log('Juego script inicializado (final v2)');
+    console.log('Juego script inicializado (corregido)');
 
     /* ========== CONFIG ======== */
     const STUDENT_PASSWORD = "PANDARIN25".normalize('NFC'); // SIN ACENTO
     const ADMIN_PASSWORD   = "XUXITO25".normalize('NFC');
-    const GAME_AUDIO_MANIFEST_URL = "audio_manifest.json";
+    const GAME_AUDIO_MANIFEST_URL = "audio_manifest.json"; // si no existeix, no passa res
 
 
     /* ========== PREGUNTAS ========== */
@@ -290,11 +290,14 @@
         const res = await fetch(GAME_AUDIO_MANIFEST_URL, { cache: 'no-cache' });
         if (!res.ok) { console.warn('No se pudo cargar manifest', res.status); return; }
         const manifest = await res.json();
+        // manifest: { "0": {url: "...", name:"..."}, "1": {...} }
         for (const key of Object.keys(manifest)){
+          // accept numeric keys, but also try to coerce "1" -> 1
           const idx = Number(key);
           if (Number.isNaN(idx) || idx < 0 || idx >= questions.length) continue;
           const entry = manifest[key];
           if (!entry || !entry.url) continue;
+          // if already in localStorage, keep that (loadSavedAudios will handle it)
           const localData = localStorage.getItem(audioKeyData(idx));
           const localName = localStorage.getItem(audioKeyName(idx));
           if (localData && localName) {
@@ -307,6 +310,7 @@
               continue;
             } catch (e) { console.warn(e); }
           }
+          // Try to prefetch as dataURL (may fail due CORS)
           const dataUrl = await fetchAsDataURL(entry.url);
           if (dataUrl) {
             const saved = saveAudioToLocal(idx, dataUrl, entry.name || entry.url.split('/').pop());
@@ -344,95 +348,6 @@
       storeResultLocal(rec);
     }
 
-    /* ========== Render & lógica principal ========= */
-    function renderQuestion(reshuffleOptions = true) {
-      const content = document.getElementById('gameContent');
-      const question = questions[currentQuestionIndex];
-      if (!questionAttempts[question.id]) questionAttempts[question.id] = 0;
-      if (reshuffleOptions || shuffledOptions.length === 0) shuffleOptions(question);
-
-      const progress = ((currentQuestionIndex) / questions.length) * 100;
-      document.getElementById('progressFill').style.width = progress + '%';
-
-      const hasAudio = !!audioFiles[currentQuestionIndex];
-      const audioFileName = audioFileNames[currentQuestionIndex] || '';
-
-      let audioUploadSection = '';
-      if (isAdminMode) {
-        audioUploadSection = `
-          <div class="audio-upload-section" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:8px">
-            <div style="width:100%;display:flex;gap:8px;align-items:center;justify-content:center">
-              <input type="file" id="audioFile${currentQuestionIndex}" accept="audio/*" style="display:none" onchange="handleAudioUpload(${currentQuestionIndex})">
-              <label for="audioFile${currentQuestionIndex}" class="small-btn" style="cursor:pointer">Subir audio (Profesor)</label>
-              <div style="font-size:13px;color:#4a5568">${audioFileName ? '✅ ' + audioFileName : 'Sin audio'}</div>
-            </div>
-            <div style="font-size:12px;color:#94a3b8">Los audios subidos quedan guardados localmente para todos los alumnos que usen este navegador.</div>
-          </div>
-        `;
-      } else {
-        audioUploadSection = `<div style="width:100%;text-align:center;font-size:13px;color:${hasAudio ? '#48bb78' : '#94a3b8'}">${hasAudio ? '✅ Audio disponible' : 'Audio no disponible. Pide al profesor que lo cargue.'}${audioFileName ? ' — ' + audioFileName : ''}</div>`;
-      }
-
-      content.innerHTML = `
-        <div class="question-card" role="region" aria-label="Pregunta ${currentQuestionIndex + 1}">
-          <div class="question-title">${question.title}</div>
-          <div class="audio-player">
-            ${audioUploadSection}
-            <div class="audio-controls" style="margin-top:6px;">
-              <button class="play-button" id="playButton" onclick="playAudio()" ${hasAudio ? '' : 'disabled'} aria-label="Reproducir audio">▶</button>
-              <div style="font-size:14px;color:#718096;margin-left:6px">${hasAudio ? '' : ''}</div>
-            </div>
-          </div>
-
-          <div class="options-grid" id="optionsGrid">
-            ${shuffledOptions.map((option, index) => `
-              <button class="option-button" onclick="selectAnswer(${index})" id="option${index}">
-                ${option}
-              </button>
-            `).join('')}
-          </div>
-
-          <div id="feedback" aria-live="polite"></div>
-          <div id="pandaCelebration" style="position:relative; min-height:140px;"></div>
-          <div class="attempts-indicator" id="attemptsIndicator" style="text-align:center;font-size:13px;color:#718096;margin-top:8px">Intentos en esta pregunta: ${questionAttempts[question.id]}</div>
-          <div style="display:flex;gap:10px;margin-top:12px;">
-            <button class="next-button" id="nextButton" onclick="nextQuestion()" style="display: none;">
-              ${currentQuestionIndex < questions.length - 1 ? 'Siguiente Pregunta' : 'Ver Resultados'}
-            </button>
-          </div>
-        </div>
-      `;
-      answered = false;
-      selectedAnswer = null;
-      setTimeout(()=> { const f=document.querySelector('.option-button'); if(f) f.focus(); }, 20);
-    }
-
-    function handleAudioUpload(questionIndex) {
-      const fileInput = document.getElementById(`audioFile${questionIndex}`);
-      if (!fileInput) return;
-      if (fileInput.files && fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const audioElement = document.createElement('audio');
-        const url = URL.createObjectURL(file);
-        audioElement.src = url;
-        audioElement.preload = 'auto';
-        audioFiles[questionIndex] = audioElement;
-        audioFileNames[questionIndex] = file.name;
-        const reader = new FileReader();
-        reader.onload = function(e){
-          const dataUrl = e.target.result;
-          saveAudioToLocal(questionIndex, dataUrl, file.name);
-          renderQuestion(false);
-          alert('Audio guardado correctamente. Los alumnos podrán reproducirlo sin descargar.');
-        };
-        reader.onerror = function(err){
-          console.warn('Error leyendo archivo para guardar', err);
-          alert('Error al leer el audio para guardarlo.');
-        };
-        try { reader.readAsDataURL(file); } catch(e) { console.warn('No se pudo leer el archivo para guardarlo', e); alert('No se pudo guardar el audio.'); }
-      }
-    }
-
     /* ========== Reproducir / Pausar ========== */
     window.playAudio = function(){
       const button = document.getElementById('playButton');
@@ -455,23 +370,6 @@
         if (button) { button.textContent = '▶'; button.style.background = 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)'; }
       }
     };
-
-    /* ========== Confetti pequeño ========== */
-    function createConfetti() {
-      const colors = ['#667eea', '#764ba2', '#48bb78', '#f6e05e', '#fc8181'];
-      const container = document.getElementById('pandaCelebration');
-      if (!container) return;
-      for (let i = 0; i < 20; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 90 + '%';
-        confetti.style.top = Math.random() * 10 + 'px';
-        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.animationDuration = (Math.random() * 1.2 + 1.6) + 's';
-        container.appendChild(confetti);
-        setTimeout(() => { if (confetti.parentNode) confetti.parentNode.removeChild(confetti); }, 3200);
-      }
-    }
 
     /* ========== Panda centered interaction ========= */
     function showPandaCelebration() {
@@ -536,11 +434,154 @@
       }
     };
 
+    /* ===========================
+       Replacements: renderQuestion + renderOptionsGrid
+       (sin handlers inline — listeners se asignan aquí)
+       =========================== */
+    // Exponer handleAudioUpload (por si queda algun handler inline o para pruebas)
+    function handleAudioUpload(questionIndex) {
+      const fileInput = document.getElementById(`audioFile${questionIndex}`);
+      if (!fileInput) return;
+      if (fileInput.files && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const audioElement = document.createElement('audio');
+        const url = URL.createObjectURL(file);
+        audioElement.src = url;
+        audioElement.preload = 'auto';
+        audioFiles[questionIndex] = audioElement;
+        audioFileNames[questionIndex] = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e){
+          const dataUrl = e.target.result;
+          saveAudioToLocal(questionIndex, dataUrl, file.name);
+          renderQuestion(false);
+          alert('Audio guardado correctamente. Los alumnos podrán reproducirlo sin descargar.');
+        };
+        reader.onerror = function(err){
+          console.warn('Error leyendo archivo para guardar', err);
+          alert('Error al leer el audio para guardarlo.');
+        };
+        try { reader.readAsDataURL(file); } catch(e) { console.warn('No se pudo leer el archivo para guardarlo', e); alert('No se pudo guardar el audio.'); }
+      }
+    }
+    // Exponer globalmente
+    window.handleAudioUpload = handleAudioUpload;
+
     function renderOptionsGrid(){
       const g = document.getElementById('optionsGrid');
       if(!g) return;
-      g.innerHTML = shuffledOptions.map((o,i)=>`<button class="option-button" id="option${i}" onclick="selectAnswer(${i})">${o}</button>`).join('');
-      document.querySelectorAll('.option-button').forEach(b=>b.disabled=false);
+      g.innerHTML = shuffledOptions.map((o,i)=>`<button class="option-button" id="option${i}">${o}</button>`).join('');
+      // attach listeners
+      const btns = g.querySelectorAll('.option-button');
+      btns.forEach((b, i) => {
+        b.disabled = false;
+        if (b._hj_click_fn) b.removeEventListener('click', b._hj_click_fn);
+        const fn = (ev) => { ev.preventDefault(); window.selectAnswer && window.selectAnswer(i); };
+        b.addEventListener('click', fn);
+        b._hj_click_fn = fn;
+      });
+    }
+
+    function renderQuestion(reshuffleOptions = true) {
+      const content = document.getElementById('gameContent');
+      const question = questions[currentQuestionIndex];
+      if (!questionAttempts[question.id]) questionAttempts[question.id] = 0;
+      if (reshuffleOptions || shuffledOptions.length === 0) shuffleOptions(question);
+
+      const progress = ((currentQuestionIndex) / questions.length) * 100;
+      document.getElementById('progressFill').style.width = progress + '%';
+
+      const hasAudio = !!audioFiles[currentQuestionIndex];
+      const audioFileName = audioFileNames[currentQuestionIndex] || '';
+
+      let audioUploadSection = '';
+      if (isAdminMode) {
+        audioUploadSection = `
+          <div class="audio-upload-section" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="width:100%;display:flex;gap:8px;align-items:center;justify-content:center">
+              <input type="file" id="audioFile${currentQuestionIndex}" accept="audio/*" style="display:none">
+              <label for="audioFile${currentQuestionIndex}" class="small-btn" style="cursor:pointer">Subir audio (Profesor)</label>
+              <div style="font-size:13px;color:#4a5568">${audioFileName ? '✅ ' + audioFileName : 'Sin audio'}</div>
+            </div>
+            <div style="font-size:12px;color:#94a3b8">Los audios subidos quedan guardados localmente para todos los alumnos que usen este navegador.</div>
+          </div>
+        `;
+      } else {
+        audioUploadSection = `<div style="width:100%;text-align:center;font-size:13px;color:${hasAudio ? '#48bb78' : '#94a3b8'}">${hasAudio ? '✅ Audio disponible' : 'Audio no disponible. Pide al profesor que lo cargue.'}${audioFileName ? ' — ' + audioFileName : ''}</div>`;
+      }
+
+      content.innerHTML = `
+        <div class="question-card" role="region" aria-label="Pregunta ${currentQuestionIndex + 1}">
+          <div class="question-title">${question.title}</div>
+          <div class="audio-player">
+            ${audioUploadSection}
+            <div class="audio-controls" style="margin-top:6px;">
+              <button class="play-button" id="playButton" ${hasAudio ? '' : 'disabled'} aria-label="Reproducir audio">▶</button>
+              <div id="audioStatus" style="font-size:14px;color:#718096;margin-left:6px">${audioFileName ? audioFileName : (hasAudio ? '' : '')}</div>
+            </div>
+          </div>
+
+          <div class="options-grid" id="optionsGrid"></div>
+
+          <div id="feedback" aria-live="polite"></div>
+          <div id="pandaCelebration" style="position:relative; min-height:140px;"></div>
+          <div class="attempts-indicator" id="attemptsIndicator" style="text-align:center;font-size:13px;color:#718096;margin-top:8px">Intentos en esta pregunta: ${questionAttempts[question.id]}</div>
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="next-button" id="nextButton" style="display: none;">
+              ${currentQuestionIndex < questions.length - 1 ? 'Siguiente Pregunta' : 'Ver Resultados'}
+            </button>
+          </div>
+        </div>
+      `;
+
+      // render options (usa la funció que definim)
+      renderOptionsGrid();
+
+      // Afegir event listener al botó play (evitem onclick inline)
+      const playBtn = document.getElementById('playButton');
+      if (playBtn) {
+        playBtn.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          window.playAudio && window.playAudio();
+        });
+      }
+
+      // Afegir listener al input file (si existeix)
+      const fileInput = document.getElementById(`audioFile${currentQuestionIndex}`);
+      if (fileInput) {
+        fileInput.removeEventListener('change', fileInput._hj_change_fn || (()=>{}));
+        const fn = () => handleAudioUpload(currentQuestionIndex);
+        fileInput.addEventListener('change', fn);
+        fileInput._hj_change_fn = fn;
+      }
+
+      // Mostrar/ocultar Next button seguint l'estat si ja está respuesta
+      const nextBtn = document.getElementById('nextButton');
+      if (nextBtn) {
+        nextBtn.onclick = () => window.nextQuestion && window.nextQuestion();
+        nextBtn.style.display = answered ? 'inline-block' : 'none';
+      }
+
+      answered = false;
+      selectedAnswer = null;
+      setTimeout(()=> { const f=document.querySelector('.option-button'); if(f) f.focus(); }, 20);
+    }
+
+    /* ========== Confetti pequeño ========== */
+    function createConfetti() {
+      const colors = ['#667eea', '#764ba2', '#48bb78', '#f6e05e', '#fc8181'];
+      const container = document.getElementById('pandaCelebration');
+      if (!container) return;
+      for (let i = 0; i < 20; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 90 + '%';
+        confetti.style.top = Math.random() * 10 + 'px';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDuration = (Math.random() * 1.2 + 1.6) + 's';
+        container.appendChild(confetti);
+        setTimeout(() => { if (confetti.parentNode) confetti.parentNode.removeChild(confetti); }, 3200);
+      }
     }
 
     window.nextQuestion = function() {
@@ -594,14 +635,16 @@
             ${perQuestionLines}
           </div>
 
-          <div style="margin-top:18px"><button onclick="restartGame()" style="padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer">Jugar de nuevo</button></div>
+          <div style="margin-top:18px"><button id="restartBtn" style="padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;cursor:pointer">Jugar de nuevo</button></div>
         </div>
       `;
+
+      document.getElementById('restartBtn').addEventListener('click', ()=> window.restartGame && window.restartGame());
 
       const sessionSummary = {
         game_session: gameSession,
         date: (new Date()).toISOString(),
-        correctAnswers, // total corrects (not used for final display)
+        correctAnswers,
         firstTryCorrectCount,
         totalQuestions: questions.length,
         attemptsByQuestion: questionAttempts,
@@ -617,6 +660,7 @@
     }
 
     async function initializeGame(){
+      // intenta prefetejar manifest i carregar audios guardats abans de mostrar la pregunta
       await loadAudioManifestAndPrefetch();
       loadSavedAudios();
       try { await window.dataSdk.init({ onDataChanged: ()=>{} }); } catch(e){ console.warn('dataSdk.init fallo', e); }
@@ -659,21 +703,17 @@
       setTimeout(()=> userNameInput.focus(), 150);
     }
 
-    // startGame: si admin => mostrar directament vista admin (no inicialitzar joc),
-    // l'admin pot obrir el juego fent clic a "Abrir juego"
     function startGame(admin=false){
       isAdminMode = admin;
       if (isAdminMode) {
         adminControls.style.visibility = 'visible';
         adminControls.setAttribute('aria-hidden','false');
-        // mostrar admin panel directament
         buildAdminAggregatedView();
         adminPanel.style.display = 'block';
       } else {
         adminControls.style.visibility = 'hidden';
         adminControls.setAttribute('aria-hidden','true');
         adminPanel.style.display = 'none';
-        // iniciar juego para alumno
         initializeGame();
       }
 
@@ -719,7 +759,6 @@
       }
       if (openGameBtnEl) {
         openGameBtnEl.onclick = () => {
-          // permitir que el admin abra el juego para subir audios / probar
           initializeGame();
         };
       }
@@ -775,10 +814,8 @@
     adminAccessBtn.addEventListener('click', ()=> {
       const v = normalizeInput(adminPasswordInput.value || '');
       if (v === ADMIN_PASSWORD) {
-        // permitir acceso admin directo (no guardar name/group)
         adminAccessPanel.style.display = 'none';
         pwOverlay.style.display = 'none';
-        // configurar adminControls y mostrar resultados
         startGame(true);
       } else {
         adminAccessError.style.display = 'block';
@@ -794,6 +831,7 @@
       try {
         console.log('DOM cargado — mostrando overlay de password...');
         showPasswordOverlay();
+        // helper global (debug)
         window.__juego = { audioFiles, audioFileNames, getStoredResults };
       } catch (e) {
         console.error('Error en DOMContentLoaded', e);
@@ -820,19 +858,15 @@
         const sid = r.game_session || ('gen-' + (r.user_name || 'u') + '-' + (r.timestamp||''));
         if(!sessionsById[sid]) sessionsById[sid] = { game_session: sid, date: r.timestamp || '', user_name: r.user_name || '', user_group: r.user_group || '', attemptsByQuestion: {}, firstTryCorrectCount:0, correctAnswers:0 };
         const s = sessionsById[sid];
-        // guardar el màxim d'intents que apareix per pregunta
         s.attemptsByQuestion[r.question_id] = Math.max(s.attemptsByQuestion[r.question_id] || 0, r.attempts || 0);
         if(r.correct) s.correctAnswers = (s.correctAnswers||0) + 1;
         if(r.first_try) s.firstTryCorrectCount = (s.firstTryCorrectCount||0) + 1;
       });
 
-      // combinar: preferir sessions explícites (les que es van gravar amb showResults)
       const explicitIds = new Set(explicitSessions.map(s=>s.game_session));
-      const combined = explicitSessions.slice(); // copy
-      // afegir sintetitzades al davant si no existeix la mateixa id
+      const combined = explicitSessions.slice();
       Object.values(sessionsById).forEach(s => { if(!explicitIds.has(s.game_session)) combined.unshift(s); });
 
-      // construir HTML
       let html = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="small-btn" id="exportAllCsv">Exportar CSV</button><button class="small-btn" id="clearResultsBtn">Borrar resultados locales</button></div>`;
       html += `<div id="adminStats"></div>`;
       html += `<div style="margin-top:10px">`;
@@ -843,7 +877,6 @@
           const dateStr = formatDateNice(sess.date);
           const user = sess.user_name || 'Anónimo';
           const group = sess.user_group || '';
-          // preferir firstTryCorrectCount si existeix en sessió explícita, si no usar synthesized value
           const totalCorrectFirstTry = typeof sess.firstTryCorrectCount === 'number' ? sess.firstTryCorrectCount : 0;
           const totalQuestions = sess.totalQuestions || questions.length;
           const attemptsByQ = sess.attemptsByQuestion || {};
@@ -878,7 +911,6 @@
         }
       });
 
-      // Estadísticas generales
       renderAdminStats(rows, combined);
     }
 
@@ -888,7 +920,6 @@
       const responseRecords = allRows.filter(r => r && !r.session);
       const explicitSessions = allRows.filter(r => r && r.session).map(r => r.session);
 
-      // total intents per question (sum intents from responseRecords + attemptsByQuestion from explicit sessions)
       const totalAttemptsPerQuestion = {};
       responseRecords.forEach(r => {
         if(!r.question_id) return;
@@ -901,25 +932,21 @@
         });
       });
 
-      // pregunta amb més intents
       let worstQid = null; let worstAttempts = 0;
       Object.keys(totalAttemptsPerQuestion).forEach(qid => {
         if (totalAttemptsPerQuestion[qid] > worstAttempts) { worstAttempts = totalAttemptsPerQuestion[qid]; worstQid = qid; }
       });
 
-      // pregunta més acertada (sumar first_try true per pregunta)
       const firstTryCorrectsPerQuestion = {};
       responseRecords.forEach(r => {
         if(!r.question_id) return;
         if(r.first_try) firstTryCorrectsPerQuestion[r.question_id] = (firstTryCorrectsPerQuestion[r.question_id] || 0) + 1;
       });
-      // explicit sessions don't carry per-question first_try breakdown, so dependem de responseRecords
       let bestQid = null; let bestCount = 0;
       Object.keys(firstTryCorrectsPerQuestion).forEach(qid => {
         if (firstTryCorrectsPerQuestion[qid] > bestCount) { bestCount = firstTryCorrectsPerQuestion[qid]; bestQid = qid; }
       });
 
-      // sessions count and avg per user
       const sessionsCount = explicitSessions.length || combinedSessions.length;
       const sessionsByUser = {};
       explicitSessions.forEach(s => {
@@ -927,7 +954,6 @@
         sessionsByUser[u] = sessionsByUser[u] || new Set();
         sessionsByUser[u].add(s.game_session || (s.date || Math.random()));
       });
-      // also include synthesized sessions (combinedSessions may include them)
       combinedSessions.forEach(s => {
         const u = s.user_name || 'Anónimo';
         sessionsByUser[u] = sessionsByUser[u] || new Set();
@@ -1005,15 +1031,11 @@
       }catch(e){}
     });
 
-    // Exponer funciones útiles globalmente (para onclick inline y pruebas)
+    // Exponer funciones útiles globalmente (para pruebas)
     window.buildAdminAggregatedView = buildAdminAggregatedView;
     window.getStoredResults = getStoredResults;
-    window.selectAnswer = window.selectAnswer || window.selectAnswer;
-    window.nextQuestion = window.nextQuestion || window.nextQuestion;
-    window.restartGame = window.restartGame || window.restartGame;
-
-    // Expose debug helpers
-    window.__juego = { audioFiles, audioFileNames, getStoredResults };
+    window.restartGame = window.restartGame;
+    // __juego ya s'ha exposat a DOMContentLoaded
 
   })();
   </script>
