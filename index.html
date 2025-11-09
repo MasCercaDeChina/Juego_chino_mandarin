@@ -920,22 +920,43 @@
       const responseRecords = allRows.filter(r => r && !r.session);
       const explicitSessions = allRows.filter(r => r && r.session).map(r => r.session);
 
-      const totalAttemptsPerQuestion = {};
-      responseRecords.forEach(r => {
-        if(!r.question_id) return;
-        totalAttemptsPerQuestion[r.question_id] = (totalAttemptsPerQuestion[r.question_id] || 0) + (r.attempts || 0);
-      });
-      explicitSessions.forEach(s => {
-        if(!s.attemptsByQuestion) return;
-        Object.keys(s.attemptsByQuestion).forEach(qid => {
-          totalAttemptsPerQuestion[qid] = (totalAttemptsPerQuestion[qid] || 0) + (s.attemptsByQuestion[qid] || 0);
-        });
-      });
+     // ---- reemplaçar per aquest bloc ----
+const totalAttemptsPerQuestion = {};
 
-      let worstQid = null; let worstAttempts = 0;
-      Object.keys(totalAttemptsPerQuestion).forEach(qid => {
-        if (totalAttemptsPerQuestion[qid] > worstAttempts) { worstAttempts = totalAttemptsPerQuestion[qid]; worstQid = qid; }
-      });
+// 1) sumar intents des de responseRecords (respostes individuals)
+// només comptem intents si attempts > 1 (les que són igual a 1 s'ignoren)
+responseRecords.forEach(r => {
+  if (!r.question_id) return;
+  const a = Number(r.attempts || 0);
+  if (a > 1) {
+    totalAttemptsPerQuestion[r.question_id] = (totalAttemptsPerQuestion[r.question_id] || 0) + a;
+  }
+});
+
+// 2) sumar intents provinents de sessions explícites (si existeixen)
+// les sessions explícites a 'explicitSessions' poden tenir attemptsByQuestion
+explicitSessions.forEach(s => {
+  if (!s.attemptsByQuestion) return;
+  Object.keys(s.attemptsByQuestion).forEach(qid => {
+    const a = Number(s.attemptsByQuestion[qid] || 0);
+    if (a > 1) {
+      totalAttemptsPerQuestion[qid] = (totalAttemptsPerQuestion[qid] || 0) + a;
+    }
+  });
+});
+
+// 3) determinar la pregunta amb més intents després del filtre
+let worstQid = null;
+let worstAttempts = 0;
+Object.keys(totalAttemptsPerQuestion).forEach(qid => {
+  const total = totalAttemptsPerQuestion[qid];
+  if (total > worstAttempts) {
+    worstAttempts = total;
+    worstQid = qid;
+  }
+});
+// ---- fi reemplaçament ----
+
 
       const firstTryCorrectsPerQuestion = {};
       responseRecords.forEach(r => {
